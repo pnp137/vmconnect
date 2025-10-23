@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    container_name: vmconnect-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: vmconnect
+      MYSQL_USER: vmconnect_user
+      MYSQL_PASSWORD: vmconnect_pass
+      MYSQL_ROOT_PASSWORD: rootpass
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - vmconnect-network
+
+  api:
+    build:
+      context: ..
+      dockerfile: ./build/Dockerfile.backend
+    restart: always
+    container_name: vmconnect-api
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=vmconnect_user
+      - DB_PASSWORD=vmconnect_pass
+      - DB_NAME=vmconnect
+      - LISTEN_PORT=8080
+      - LOG_LEVEL=DEBUG
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - mysql
+    networks:
+      - vmconnect-network
+
+volumes:
+  mysql_data:
+
+networks:
+  vmconnect-network:
+    driver: bridge
+

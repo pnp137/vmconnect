@@ -1,0 +1,38 @@
+{"L":"info","Service":"apps-api","T":"2025-10-21T14:30:40+05:30","message":"Starting webserver for apps-api provider on port :8080"}
+{"L":"info","Service":"apps-api","T":"2025-10-21T14:31:50+05:30","message":"Terminating api server: via signal"}
+{"L":"info","Service":"apps-api","T":"2025-10-21T14:31:54+05:30","message":"Starting webserver for apps-api provider on port :8080"}
+{"L":"info","Service":"apps-api","T":"2025-10-21T14:32:02+05:30","message":"Terminating api server: via signal"}
+{"L":"info","Service":"apps-api","T":"2025-10-21T14:49:30+05:30","message":"Starting webserver for apps-api provider on port :8080"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T02:16:15+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T02:33:25+05:30","message":"Terminating api server: via signal"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T02:37:36+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T23:03:25+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"error","Service":"apps-api","error":"Cannot POST /api/vendor/register","T":"2025-10-22T23:05:04+05:30","message":"Error thrown from DefaultErrorHandler"}
+{"L":"error","Service":"apps-api","error":"Cannot POST /api/vendor/register","T":"2025-10-22T23:08:06+05:30","message":"Error thrown from DefaultErrorHandler"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T23:08:14+05:30","message":"Terminating api server: via signal"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T23:08:18+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"error","Service":"apps-api","error":"Cannot POST /api/vendor/register","T":"2025-10-22T23:08:23+05:30","message":"Error thrown from DefaultErrorHandler"}
+{"L":"error","Service":"apps-api","error":"Cannot POST /api/vendor/register","T":"2025-10-22T23:08:43+05:30","message":"Error thrown from DefaultErrorHandler"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T23:12:28+05:30","message":"Terminating api server: via signal"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T23:12:31+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"debug","Service":"apps-api","T":"2025-10-22T23:13:50+05:30","message":"handler.MerchantRegister: Merchant registration request received for email: jane@example.com"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T23:13:50+05:30","message":"handler.MerchantRegister: Merchant registration successful for email: jane@example.com"}
+{"L":"debug","Service":"apps-api","T":"2025-10-22T23:52:38+05:30","message":"handler.Login: Login request received for email: "}
+{"L":"error","Service":"apps-api","error":"email is required","T":"2025-10-22T23:52:38+05:30","message":"handler.Login: Error in validating login request"}
+{"L":"debug","Service":"apps-api","T":"2025-10-22T23:52:52+05:30","message":"handler.Login: Login request received for email: "}
+{"L":"error","Service":"apps-api","error":"email is required","T":"2025-10-22T23:52:52+05:30","message":"handler.Login: Error in validating login request"}
+{"L":"debug","Service":"apps-api","T":"2025-10-22T23:52:53+05:30","message":"handler.Login: Login request received for email: "}
+{"L":"error","Service":"apps-api","error":"email is required","T":"2025-10-22T23:52:53+05:30","message":"handler.Login: Error in validating login request"}
+{"L":"debug","Service":"apps-api","T":"2025-10-22T23:52:54+05:30","message":"handler.Login: Login request received for email: "}
+{"L":"error","Service":"apps-api","error":"email is required","T":"2025-10-22T23:52:54+05:30","message":"handler.Login: Error in validating login request"}
+{"L":"debug","Service":"apps-api","T":"2025-10-22T23:53:42+05:30","message":"handler.Login: Login request received for email: "}
+{"L":"error","Service":"apps-api","error":"email is required","T":"2025-10-22T23:53:42+05:30","message":"handler.Login: Error in validating login request"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T23:53:56+05:30","message":"Terminating api server: via signal"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T23:54:32+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"debug","Service":"apps-api","T":"2025-10-22T23:54:40+05:30","message":"handler.Login: Login request received for username: john@example.com"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T23:54:40+05:30","message":"handler.Login: Login successful for username: john@example.com"}
+{"L":"debug","Service":"apps-api","T":"2025-10-22T23:54:54+05:30","message":"handler.Login: Login request received for username: 9876543210"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T23:54:54+05:30","message":"handler.Login: Login successful for username: 9876543210"}
+{"L":"debug","Service":"apps-api","T":"2025-10-22T23:55:18+05:30","message":"handler.Login: Login request received for username: 9876543211"}
+{"L":"info","Service":"apps-api","T":"2025-10-22T23:55:18+05:30","message":"handler.Login: Login successful for username: 9876543211"}
+{"L":"info","Service":"apps-api","T":"2025-10-23T02:53:30+05:30","message":"Terminating api server: via signal"}

@@ -1,0 +1,32 @@
+meta {
+  name: Merchant register
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8080/api/v0/merchant/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Jane Smith",
+    "email": "jane@example.com",
+    "phone": "9876543211",
+    "password": "password123",
+    "shop_name": "Quick Mart",
+    "address": "456 Market Street, Delhi",
+    "pincode": "110001"
+  }
+}
+
+settings {
+  encodeUrl: false
+  timeout: 0
+}

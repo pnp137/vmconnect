@@ -1,0 +1,33 @@
+meta {
+  name: Vendor register
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8080/api/v0/vendor/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "9876543210",
+    "password": "password123",
+    "company_name": "Tech Solutions Ltd",
+    "gst_number": "22ABCDE1234F1Z5",
+    "address": "123 Business Street, Mumbai, Maharashtra",
+    "logo_url": "https://example.com/logo.png"
+  }
+}
+
+settings {
+  encodeUrl: false
+  timeout: 0
+}
