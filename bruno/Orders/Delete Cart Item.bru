@@ -1,0 +1,20 @@
+meta {
+  name: Delete Cart Item
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://localhost:8080/api/v0/merchant/1/cart/1/items/101
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer YOUR_TOKEN
+}
+
+settings {
+  encodeUrl: false
+  timeout: 0
+}

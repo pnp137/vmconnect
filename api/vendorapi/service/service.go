@@ -9,12 +9,14 @@ import (
 	"linksupply.io/vmconnect/api/vendorapi/dto"
 	"linksupply.io/vmconnect/api/vendorapi/repository"
 	"linksupply.io/vmconnect/database/models"
+	"linksupply.io/vmconnect/utils"
 	"linksupply.io/vmconnect/utils/auth"
 )
 
 // VendorService defines the interface for vendor service
 type VendorService interface {
 	RegisterVendor(ctx context.Context, registerDto *dto.VendorRegisterRequestDto) (*dto.VendorResponse, *response.ErrorDetails)
+	GetVendorInfo(ctx context.Context, vendorID uint) (*dto.VendorUserInfo, *response.ErrorDetails)
 }
 
 type VendorServiceImpl struct {
@@ -47,16 +49,6 @@ func (s *VendorServiceImpl) RegisterVendor(ctx context.Context, registerDto *dto
 		}
 	}
 
-	// Get vendor role
-	vendorRole, err := s.repository.GetRoleByName("vendor")
-	if err != nil {
-		return nil, &response.ErrorDetails{
-			Code:    http.StatusInternalServerError,
-			Message: "Vendor role not found",
-			Error:   err,
-		}
-	}
-
 	// Hash password
 	hashedPassword, err := auth.HashPassword(registerDto.Password)
 	if err != nil {
@@ -67,13 +59,16 @@ func (s *VendorServiceImpl) RegisterVendor(ctx context.Context, registerDto *dto
 		}
 	}
 
+	// Set vendor role
+	vendorRole := models.ROLE_VENDOR
+
 	// Create user
 	user := &models.User{
 		Name:         registerDto.Name,
 		Email:        registerDto.Email,
 		Phone:        registerDto.Phone,
 		PasswordHash: hashedPassword,
-		RoleID:       vendorRole.ID,
+		RoleID:       &vendorRole,
 	}
 
 	createdUser, err := s.repository.CreateUser(user)
@@ -85,9 +80,20 @@ func (s *VendorServiceImpl) RegisterVendor(ctx context.Context, registerDto *dto
 		}
 	}
 
+	// Generate unique vendor code
+	vendorCode, err := utils.GenerateVendorCode(registerDto.CompanyName)
+	if err != nil {
+		return nil, &response.ErrorDetails{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to generate vendor code",
+			Error:   err,
+		}
+	}
+
 	// Create vendor profile
 	vendor := &models.Vendor{
 		UserID:      createdUser.ID,
+		VendorCode:  vendorCode,
 		CompanyName: registerDto.CompanyName,
 		GSTNumber:   registerDto.GSTNumber,
 		Address:     registerDto.Address,
@@ -110,6 +116,7 @@ func (s *VendorServiceImpl) RegisterVendor(ctx context.Context, registerDto *dto
 			Name:        createdUser.Name,
 			Email:       createdUser.Email,
 			Phone:       createdUser.Phone,
+			VendorCode:  createdVendor.VendorCode,
 			CompanyName: createdVendor.CompanyName,
 			GSTNumber:   createdVendor.GSTNumber,
 			Address:     createdVendor.Address,
@@ -120,4 +127,40 @@ func (s *VendorServiceImpl) RegisterVendor(ctx context.Context, registerDto *dto
 	}
 
 	return resp, nil
+}
+
+// GetVendorInfo gets vendor information by ID
+func (s *VendorServiceImpl) GetVendorInfo(ctx context.Context, vendorID uint) (*dto.VendorUserInfo, *response.ErrorDetails) {
+	// Get vendor with user info
+	vendor, err := s.repository.GetVendorByID(vendorID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusNotFound,
+				Message: "Vendor not found",
+				Error:   err,
+			}
+		}
+		return nil, &response.ErrorDetails{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get vendor information",
+			Error:   err,
+		}
+	}
+
+	// Convert to DTO
+	vendorInfo := &dto.VendorUserInfo{
+		ID:          vendor.User.ID,
+		Name:        vendor.User.Name,
+		Email:       vendor.User.Email,
+		Phone:       vendor.User.Phone,
+		VendorCode:  vendor.VendorCode,
+		CompanyName: vendor.CompanyName,
+		GSTNumber:   vendor.GSTNumber,
+		Address:     vendor.Address,
+		LogoURL:     vendor.LogoURL,
+		Role:        "vendor",
+	}
+
+	return vendorInfo, nil
 }

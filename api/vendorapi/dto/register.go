@@ -36,6 +36,7 @@ type VendorUserInfo struct {
 	Name        string `json:"name"`
 	Email       string `json:"email"`
 	Phone       string `json:"phone"`
+	VendorCode  string `json:"vendor_code"`
 	CompanyName string `json:"company_name"`
 	GSTNumber   string `json:"gst_number"`
 	Address     string `json:"address"`

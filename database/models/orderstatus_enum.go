@@ -5,18 +5,29 @@ import "strconv"
 type OrderStatus int
 
 const (
-	ORDER_IN_CART        OrderStatus = 10
-	ORDER_PLACED         OrderStatus = 20
-	ORDER_CONFIRMED      OrderStatus = 30
-	ORDER_INVOICED       OrderStatus = 40
-	ORDER_PARTIALLY_PAID OrderStatus = 50
-	ORDER_PAID           OrderStatus = 60
-	ORDER_READY_TO_SHIP  OrderStatus = 70
-	ORDER_SHIPPED        OrderStatus = 80
-	ORDER_DELIVERED      OrderStatus = 90
-	ORDER_COMPLETED      OrderStatus = 100
-	ORDER_CANCELLED      OrderStatus = 110
-	ORDER_RETURNED       OrderStatus = 120
+	// Cart State
+	ORDER_IN_CART OrderStatus = 5 // Items in cart, not yet placed
+
+	// Initial States
+	ORDER_PLACED          OrderStatus = 10 // Merchant placed order
+	ORDER_PAYMENT_PENDING OrderStatus = 15 // Payment submitted, awaiting verification
+
+	// Confirmation States
+	ORDER_CONFIRMED OrderStatus = 20 // Vendor accepted order
+
+	// Processing States
+	ORDER_INVOICED OrderStatus = 30 // Invoice generated
+
+	// Fulfillment States
+	ORDER_SHIPPED   OrderStatus = 40 // Vendor sent goods
+	ORDER_DELIVERED OrderStatus = 50 // Merchant received goods
+
+	// Completion States
+	ORDER_COMPLETED OrderStatus = 60 // Order fully completed (payment settled)
+
+	// Exception States
+	ORDER_CANCELLED OrderStatus = 70 // Order cancelled
+	ORDER_ON_HOLD   OrderStatus = 75 // Order on hold (optional)
 )
 
 func (orderStatus OrderStatus) String() string {
@@ -25,16 +36,12 @@ func (orderStatus OrderStatus) String() string {
 		return "IN_CART"
 	case ORDER_PLACED:
 		return "PLACED"
+	case ORDER_PAYMENT_PENDING:
+		return "PAYMENT_PENDING"
 	case ORDER_CONFIRMED:
 		return "CONFIRMED"
 	case ORDER_INVOICED:
 		return "INVOICED"
-	case ORDER_PARTIALLY_PAID:
-		return "PARTIALLY_PAID"
-	case ORDER_PAID:
-		return "PAID"
-	case ORDER_READY_TO_SHIP:
-		return "READY_TO_SHIP"
 	case ORDER_SHIPPED:
 		return "SHIPPED"
 	case ORDER_DELIVERED:
@@ -43,8 +50,8 @@ func (orderStatus OrderStatus) String() string {
 		return "COMPLETED"
 	case ORDER_CANCELLED:
 		return "CANCELLED"
-	case ORDER_RETURNED:
-		return "RETURNED"
+	case ORDER_ON_HOLD:
+		return "ON_HOLD"
 	default:
 		return "UNKNOWN STATUS"
 	}
@@ -52,18 +59,16 @@ func (orderStatus OrderStatus) String() string {
 
 var (
 	orderStatusStringMap = map[string]OrderStatus{
-		"IN_CART":        ORDER_IN_CART,
-		"PLACED":         ORDER_PLACED,
-		"CONFIRMED":      ORDER_CONFIRMED,
-		"INVOICED":       ORDER_INVOICED,
-		"PARTIALLY_PAID": ORDER_PARTIALLY_PAID,
-		"PAID":           ORDER_PAID,
-		"READY_TO_SHIP":  ORDER_READY_TO_SHIP,
-		"SHIPPED":        ORDER_SHIPPED,
-		"DELIVERED":      ORDER_DELIVERED,
-		"COMPLETED":      ORDER_COMPLETED,
-		"CANCELLED":      ORDER_CANCELLED,
-		"RETURNED":       ORDER_RETURNED,
+		"IN_CART":         ORDER_IN_CART,
+		"PLACED":          ORDER_PLACED,
+		"PAYMENT_PENDING": ORDER_PAYMENT_PENDING,
+		"CONFIRMED":       ORDER_CONFIRMED,
+		"INVOICED":        ORDER_INVOICED,
+		"SHIPPED":         ORDER_SHIPPED,
+		"DELIVERED":       ORDER_DELIVERED,
+		"COMPLETED":       ORDER_COMPLETED,
+		"CANCELLED":       ORDER_CANCELLED,
+		"ON_HOLD":         ORDER_ON_HOLD,
 	}
 )
 
@@ -73,18 +78,16 @@ func ParseOrderStatusString(str string) (OrderStatus, bool) {
 }
 
 var OrderStatusMap = map[OrderStatus]int{
-	ORDER_IN_CART:        10,
-	ORDER_PLACED:         20,
-	ORDER_CONFIRMED:      30,
-	ORDER_INVOICED:       40,
-	ORDER_PARTIALLY_PAID: 50,
-	ORDER_PAID:           60,
-	ORDER_READY_TO_SHIP:  70,
-	ORDER_SHIPPED:        80,
-	ORDER_DELIVERED:      90,
-	ORDER_COMPLETED:      100,
-	ORDER_CANCELLED:      110,
-	ORDER_RETURNED:       120,
+	ORDER_IN_CART:         5,
+	ORDER_PLACED:          10,
+	ORDER_PAYMENT_PENDING: 15,
+	ORDER_CONFIRMED:       20,
+	ORDER_INVOICED:        30,
+	ORDER_SHIPPED:         40,
+	ORDER_DELIVERED:       50,
+	ORDER_COMPLETED:       60,
+	ORDER_CANCELLED:       70,
+	ORDER_ON_HOLD:         75,
 }
 
 func CheckIfOrderStatusStringIsValid(str string) bool {

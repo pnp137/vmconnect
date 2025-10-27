@@ -36,3 +36,85 @@
 {"L":"debug","Service":"apps-api","T":"2025-10-22T23:55:18+05:30","message":"handler.Login: Login request received for username: 9876543211"}
 {"L":"info","Service":"apps-api","T":"2025-10-22T23:55:18+05:30","message":"handler.Login: Login successful for username: 9876543211"}
 {"L":"info","Service":"apps-api","T":"2025-10-23T02:53:30+05:30","message":"Terminating api server: via signal"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:09:15+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T01:11:59+05:30","message":"[MerchantVendorHandler.GetMerchantVendors] Getting vendors for merchant ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:11:59+05:30","message":"[MerchantVendorHandler.GetMerchantVendors] Successfully retrieved 0 vendors for merchant ID: 1"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T01:12:46+05:30","message":"[MerchantVendorHandler.AddVendorToMerchant] Adding vendor with code: ABC1234 to merchant ID: 1"}
+{"L":"error","Service":"apps-api","error":"record not found","T":"2025-10-25T01:12:46+05:30","message":"[MerchantVendorHandler.AddVendorToMerchant] Error adding vendor to merchant: Invalid vendor code provided"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T01:14:16+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Getting products for merchant ID: 1 and vendor ID: 1"}
+{"L":"error","Service":"apps-api","error":"Error 1146 (42S02): Table 'vmconnect.merchant_product_visibility' doesn't exist","T":"2025-10-25T01:14:16+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Error getting vendor products: Failed to get vendor products"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T01:16:26+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Getting products for merchant ID: 1 and vendor ID: 1"}
+{"L":"error","Service":"apps-api","error":"Error 1146 (42S02): Table 'vmconnect.merchant_product_visibility' doesn't exist","T":"2025-10-25T01:16:26+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Error getting vendor products: Failed to get vendor products"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:19:58+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"panic","Service":"apps-api","error":"failed to listen: listen tcp4 :8080: bind: address already in use","T":"2025-10-25T01:19:58+05:30","message":"Could not start API server: failed to listen: listen tcp4 :8080: bind: address already in use"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:20:13+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T01:21:00+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Getting products for merchant ID: 1 and vendor ID: 1"}
+{"L":"error","Service":"apps-api","error":"Error 1146 (42S02): Table 'vmconnect.merchant_product_visibility' doesn't exist","T":"2025-10-25T01:21:00+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Error getting vendor products: Failed to get vendor products"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T01:21:01+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Getting products for merchant ID: 1 and vendor ID: 1"}
+{"L":"error","Service":"apps-api","error":"Error 1146 (42S02): Table 'vmconnect.merchant_product_visibility' doesn't exist","T":"2025-10-25T01:21:01+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Error getting vendor products: Failed to get vendor products"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T01:21:02+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Getting products for merchant ID: 1 and vendor ID: 1"}
+{"L":"error","Service":"apps-api","error":"Error 1146 (42S02): Table 'vmconnect.merchant_product_visibility' doesn't exist","T":"2025-10-25T01:21:02+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Error getting vendor products: Failed to get vendor products"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:23:00+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"panic","Service":"apps-api","error":"failed to listen: listen tcp4 :8080: bind: address already in use","T":"2025-10-25T01:23:00+05:30","message":"Could not start API server: failed to listen: listen tcp4 :8080: bind: address already in use"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T01:25:17+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Getting products for merchant ID: 1 and vendor ID: 1"}
+{"L":"error","Service":"apps-api","error":"Error 1146 (42S02): Table 'vmconnect.merchant_product_visibility' doesn't exist","T":"2025-10-25T01:25:17+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Error getting vendor products: Failed to get vendor products"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:25:42+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"panic","Service":"apps-api","error":"failed to listen: listen tcp4 :8080: bind: address already in use","T":"2025-10-25T01:25:42+05:30","message":"Could not start API server: failed to listen: listen tcp4 :8080: bind: address already in use"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:26:25+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T01:27:10+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Getting products for merchant ID: 1 and vendor ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:27:10+05:30","message":"[MerchantVendorHandler.GetVendorProducts] Successfully retrieved 0 products for merchant ID: 1 and vendor ID: 1"}
+{"L":"error","Service":"apps-api","error":"Cannot GET /api/v0/merchant/1","T":"2025-10-25T01:40:58+05:30","message":"Error thrown from DefaultErrorHandler"}
+{"L":"error","Service":"apps-api","error":"Cannot GET /api/v0/vendor/1","T":"2025-10-25T01:41:02+05:30","message":"Error thrown from DefaultErrorHandler"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:41:20+05:30","message":"Terminating api server: via signal"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:41:24+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T01:41:27+05:30","message":"[VendorHandler.GetVendorInfo] Getting vendor info for ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:41:27+05:30","message":"[VendorHandler.GetVendorInfo] Successfully retrieved vendor info for ID: 1"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T01:41:30+05:30","message":"[MerchantHandler.GetMerchantInfo] Getting merchant info for ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T01:41:30+05:30","message":"[MerchantHandler.GetMerchantInfo] Successfully retrieved merchant info for ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T02:25:55+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T02:26:04+05:30","message":"[MerchantVendorHandler.GetVendorCategories] Getting categories for merchant ID: 1 and vendor ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T02:26:04+05:30","message":"[MerchantVendorHandler.GetVendorCategories] Successfully retrieved 0 categories for merchant ID: 1 and vendor ID: 1"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T02:27:34+05:30","message":"[MerchantVendorHandler.GetVendorProductsByCategory] Getting products for merchant ID: 1, vendor ID: 1, category ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T02:27:34+05:30","message":"[MerchantVendorHandler.GetVendorProductsByCategory] Successfully retrieved 0 products for merchant ID: 1, vendor ID: 1, category ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T04:16:03+05:30","message":"Terminating api server: via signal"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T11:11:48+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T17:44:13+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T22:04:08+05:30","message":"[OrderHandler.ManageCartItem] Managing cart item for product 123 with quantity 2 for merchant ID: 1 and vendor ID: 2"}
+{"L":"error","Service":"apps-api","error":"Error 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`vmconnect`.`orders`, CONSTRAINT `fk_orders_vendor` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`))","T":"2025-10-25T22:04:08+05:30","message":"[OrderHandler.ManageCartItem] Error managing cart item: Failed to get or create cart order"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T22:04:26+05:30","message":"[OrderHandler.ManageCartItem] Managing cart item for product 123 with quantity 2 for merchant ID: 1 and vendor ID: 1"}
+{"L":"error","Service":"apps-api","error":"record not found","T":"2025-10-25T22:04:26+05:30","message":"[OrderHandler.ManageCartItem] Error managing cart item: Product not found"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T22:05:23+05:30","message":"[OrderHandler.ManageCartItem] Managing cart item for product 123 with quantity 0 for merchant ID: 1 and vendor ID: 1"}
+{"L":"error","Service":"apps-api","error":"record not found","T":"2025-10-25T22:05:23+05:30","message":"[OrderHandler.ManageCartItem] Error managing cart item: Product not found"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T22:24:38+05:30","message":"[OrderHandler.GetMerchantOrders] Getting orders for merchant ID: 1"}
+{"L":"error","Service":"apps-api","error":"unsupported data type: 0x14000450458: Table not set, please set it like: db.Model(&user) or db.Table(\"users\")","T":"2025-10-25T22:24:38+05:30","message":"[OrderHandler.GetMerchantOrders] Error getting merchant orders: Failed to get merchant orders"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T22:24:48+05:30","message":"[OrderHandler.GetMerchantOrders] Getting orders for merchant ID: 1"}
+{"L":"error","Service":"apps-api","error":"unsupported data type: 0x1400051a4d8: Table not set, please set it like: db.Model(&user) or db.Table(\"users\")","T":"2025-10-25T22:24:48+05:30","message":"[OrderHandler.GetMerchantOrders] Error getting merchant orders: Failed to get merchant orders"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T22:24:49+05:30","message":"[OrderHandler.GetMerchantOrders] Getting orders for merchant ID: 1"}
+{"L":"error","Service":"apps-api","error":"unsupported data type: 0x1400000e3e8: Table not set, please set it like: db.Model(&user) or db.Table(\"users\")","T":"2025-10-25T22:24:49+05:30","message":"[OrderHandler.GetMerchantOrders] Error getting merchant orders: Failed to get merchant orders"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T22:29:56+05:30","message":"Terminating api server: via signal"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T22:30:02+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T22:30:06+05:30","message":"[OrderHandler.GetMerchantOrders] Getting orders for merchant ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-25T22:30:06+05:30","message":"[OrderHandler.GetMerchantOrders] Successfully retrieved 0 orders for merchant ID: 1"}
+{"L":"debug","Service":"apps-api","T":"2025-10-25T22:32:37+05:30","message":"[OrderHandler.UpdateOrderStatus] Updating order 456 status to PLACED for merchant ID: 1"}
+{"L":"error","Service":"apps-api","error":"record not found","T":"2025-10-25T22:32:37+05:30","message":"[OrderHandler.UpdateOrderStatus] Error updating order status: Order not found"}
+{"L":"info","Service":"apps-api","T":"2025-10-26T01:14:44+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"debug","Service":"apps-api","T":"2025-10-26T01:15:29+05:30","message":"[OrderHandler.ManageCartItem] Managing cart item for product 123 with quantity 3 for merchant ID: 1 and vendor ID: 2"}
+{"L":"error","Service":"apps-api","error":"Error 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`vmconnect`.`orders`, CONSTRAINT `fk_orders_vendor` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`))","T":"2025-10-26T01:15:29+05:30","message":"[OrderHandler.ManageCartItem] Error managing cart item: Failed to get or create cart order"}
+{"L":"debug","Service":"apps-api","T":"2025-10-26T01:15:36+05:30","message":"[OrderHandler.ManageCartItem] Managing cart item for product 123 with quantity 3 for merchant ID: 1 and vendor ID: 1"}
+{"L":"error","Service":"apps-api","error":"record not found","T":"2025-10-26T01:15:36+05:30","message":"[OrderHandler.ManageCartItem] Error managing cart item: Product not found"}
+{"L":"debug","Service":"apps-api","T":"2025-10-26T01:17:12+05:30","message":"[OrderHandler.DeleteOrderItem] Deleting order item ID: 101 from order ID: 789 for merchant ID: 1"}
+{"L":"error","Service":"apps-api","error":"record not found","T":"2025-10-26T01:17:12+05:30","message":"[OrderHandler.DeleteOrderItem] Error deleting order item: Order not found"}
+{"L":"debug","Service":"apps-api","T":"2025-10-26T01:17:36+05:30","message":"[OrderHandler.DeleteOrderItem] Deleting order item ID: 101 from order ID: 1 for merchant ID: 1"}
+{"L":"error","Service":"apps-api","error":"record not found","T":"2025-10-26T01:17:36+05:30","message":"[OrderHandler.DeleteOrderItem] Error deleting order item: Order not found"}
+{"L":"debug","Service":"apps-api","T":"2025-10-26T08:53:45+05:30","message":"[MerchantVendorHandler.GetVendorProductsByCategory] Getting products for merchant ID: 1, vendor ID: 1, category ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-26T08:53:45+05:30","message":"[MerchantVendorHandler.GetVendorProductsByCategory] Successfully retrieved 0 products for merchant ID: 1, vendor ID: 1, category ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-28T01:47:22+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"info","Service":"apps-api","T":"2025-10-28T01:50:18+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"panic","Service":"apps-api","error":"failed to listen: listen tcp4 :8080: bind: address already in use","T":"2025-10-28T01:50:18+05:30","message":"Could not start API server: failed to listen: listen tcp4 :8080: bind: address already in use"}
+{"L":"info","Service":"apps-api","T":"2025-10-28T01:57:34+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"panic","Service":"apps-api","error":"failed to listen: listen tcp4 :8080: bind: address already in use","T":"2025-10-28T01:57:34+05:30","message":"Could not start API server: failed to listen: listen tcp4 :8080: bind: address already in use"}
+{"L":"info","Service":"apps-api","T":"2025-10-28T01:59:34+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"panic","Service":"apps-api","error":"failed to listen: listen tcp4 :8080: bind: address already in use","T":"2025-10-28T01:59:34+05:30","message":"Could not start API server: failed to listen: listen tcp4 :8080: bind: address already in use"}
+{"L":"info","Service":"apps-api","T":"2025-10-28T02:00:48+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
+{"L":"debug","Service":"apps-api","T":"2025-10-28T02:02:04+05:30","message":"[MerchantHandler.GetMerchantInfo] Getting merchant info for ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-28T02:02:04+05:30","message":"[MerchantHandler.GetMerchantInfo] Successfully retrieved merchant info for ID: 1"}

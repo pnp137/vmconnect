@@ -4,20 +4,51 @@ import "time"
 
 // ----------------- 7. ORDERS -----------------
 type Order struct {
-	ID          uint         `gorm:"primaryKey" json:"id"`
-	MerchantID  uint         `gorm:"not null" json:"merchant_id"`
-	VendorID    uint         `gorm:"not null" json:"vendor_id"`
-	Status      *OrderStatus `gorm:"type:int;not_null;index:idx_order_status;"`
-	TotalAmount float64      `json:"total_amount"`
-	Notes       string       `gorm:"type:text" json:"notes,omitempty"`
+	ID         uint   `gorm:"primaryKey" json:"id"`
+	OrderNo    string `gorm:"uniqueIndex;size:100" json:"order_no"` // Unique order number
+	MerchantID uint   `gorm:"not null;index" json:"merchant_id"`
+	VendorID   uint   `gorm:"not null;index" json:"vendor_id"`
 
-	InvoiceID    string          `json:"invoice_id"`
-	IsDeleted    bool            `gorm:"default:false" json:"is_deleted"`
-	CreatedAt    time.Time       `json:"created_at"`
-	UpdatedAt    time.Time       `json:"updated_at"`
-	OrderItems   []OrderItem     `gorm:"foreignKey:OrderID" json:"order_items"`
-	OrderHistory []OrderActivity `gorm:"foreignKey:OrderID" json:"orderHistory,omitempty"`
+	// Order State
+	Status          *OrderStatus `gorm:"type:int;not null;index" json:"status"`
+	StatusUpdatedAt time.Time    `json:"status_updated_at"`
+	StatusUpdatedBy uint         `json:"status_updated_by"` // User ID who last updated status
 
-	Vendor   Vendor   `gorm:"foreignKey:VendorID" json:"vendor"`
-	Merchant Merchant `gorm:"foreignKey:MerchantID" json:"merchant"`
+	// Financial Tracking
+	TotalAmount       float64 `json:"total_amount"`
+	PaidAmount        float64 `gorm:"default:0" json:"paid_amount"`        // Auto-calculated from payments
+	OutstandingAmount float64 `gorm:"default:0" json:"outstanding_amount"` // TotalAmount - PaidAmount
+
+	// Payment Tracking (Independent of order status)
+	OrderPaid   bool       `gorm:"default:false;index" json:"order_paid"` // Vendor confirms received money
+	OrderPaidAt *time.Time `json:"order_paid_at,omitempty"`
+	OrderPaidBy uint       `json:"order_paid_by,omitempty"` // Vendor UserID who marked as paid
+
+	// Invoice Tracking
+	InvoiceGenerated   bool       `gorm:"default:false" json:"invoice_generated"`
+	InvoiceGeneratedAt *time.Time `json:"invoice_generated_at,omitempty"`
+	InvoiceNumber      string     `gorm:"size:100" json:"invoice_number,omitempty"`
+	InvoiceID          string     `json:"invoice_id,omitempty"` // Legacy field
+
+	// Shipping Tracking (Simple - no logistics)
+	ShippedAt   *time.Time `json:"shipped_at,omitempty"`   // When vendor sent goods
+	DeliveredAt *time.Time `json:"delivered_at,omitempty"` // When merchant received goods
+
+	// Metadata
+	ItemCount          int     `gorm:"default:0" json:"item_count"`
+	Notes              string  `gorm:"type:text" json:"notes,omitempty"`
+	CancellationReason string  `gorm:"type:text" json:"cancellation_reason,omitempty"`
+	Metadata           JSONMap `gorm:"type:json" json:"metadata,omitempty"`
+
+	// Timestamps
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	IsDeleted bool      `gorm:"default:false;index" json:"is_deleted"`
+
+	// Relationships
+	Vendor        Vendor          `gorm:"foreignKey:VendorID" json:"vendor,omitempty"`
+	Merchant      Merchant        `gorm:"foreignKey:MerchantID" json:"merchant,omitempty"`
+	OrderItems    []OrderItem     `gorm:"foreignKey:OrderID" json:"order_items,omitempty"`
+	Payments      []Payment       `gorm:"foreignKey:OrderID" json:"payments,omitempty"`
+	OrderActivity []OrderActivity `gorm:"foreignKey:OrderID" json:"order_activity,omitempty"`
 }

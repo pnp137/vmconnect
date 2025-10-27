@@ -57,7 +57,7 @@ func (s *AuthServiceImpl) Login(ctx context.Context, loginDto *dto.LoginRequestD
 	}
 
 	// Generate JWT token
-	token, err := auth.GenerateJWT(user.ID, user.Email, user.Role.Name)
+	token, err := auth.GenerateJWT(user.ID, user.Email, user.RoleID.String())
 	if err != nil {
 		return nil, &response.ErrorDetails{
 			Code:    http.StatusInternalServerError,
@@ -70,8 +70,8 @@ func (s *AuthServiceImpl) Login(ctx context.Context, loginDto *dto.LoginRequestD
 	var message string
 
 	// Get user-specific profile based on role
-	switch user.Role.Name {
-	case "merchant":
+	switch *user.RoleID {
+	case models.ROLE_MERCHANT:
 		merchant, err := s.repository.GetMerchantByUserID(user.ID)
 		if err != nil {
 			return nil, &response.ErrorDetails{
@@ -86,7 +86,7 @@ func (s *AuthServiceImpl) Login(ctx context.Context, loginDto *dto.LoginRequestD
 				Name:  user.Name,
 				Email: user.Email,
 				Phone: user.Phone,
-				Role:  user.Role.Name,
+				Role:  user.RoleID.String(),
 			},
 			ShopName: merchant.ShopName,
 			Address:  merchant.Address,
@@ -94,7 +94,7 @@ func (s *AuthServiceImpl) Login(ctx context.Context, loginDto *dto.LoginRequestD
 		}
 		message = "Merchant login successful"
 
-	case "vendor":
+	case models.ROLE_VENDOR:
 		vendor, err := s.repository.GetVendorByUserID(user.ID)
 		if err != nil {
 			return nil, &response.ErrorDetails{
@@ -109,7 +109,7 @@ func (s *AuthServiceImpl) Login(ctx context.Context, loginDto *dto.LoginRequestD
 				Name:  user.Name,
 				Email: user.Email,
 				Phone: user.Phone,
-				Role:  user.Role.Name,
+				Role:  user.RoleID.String(),
 			},
 			CompanyName: vendor.CompanyName,
 			GSTNumber:   vendor.GSTNumber,

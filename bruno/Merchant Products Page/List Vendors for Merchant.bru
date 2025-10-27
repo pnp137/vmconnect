@@ -1,0 +1,20 @@
+meta {
+  name: List Vendors for Merchant
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/v0/merchant/1/vendors
+  body: none
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: false
+  timeout: 0
+}

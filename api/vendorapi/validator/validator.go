@@ -3,6 +3,7 @@ package validator
 import (
 	"errors"
 	"regexp"
+	"strconv"
 
 	"linksupply.io/vmconnect/api/vendorapi/dto"
 )
@@ -10,6 +11,10 @@ import (
 // VendorValidator defines the interface for vendor validation
 type VendorValidator interface {
 	ValidateRegisterRequest(req *dto.VendorRegisterRequest) error
+	ValidateAddProductRequest(req *dto.AddProductRequest) error
+	ValidateUpdateProductRequest(req *dto.UpdateProductRequest) error
+	ValidateProductQueryParam(queryParams *dto.ProductQueryParam) error
+	ValidateIDParameter(idStr, paramName string) (uint, error)
 }
 
 type VendorValidatorImpl struct{}
@@ -77,4 +82,142 @@ func (v *VendorValidatorImpl) ValidateRegisterRequest(req *dto.VendorRegisterReq
 	}
 
 	return nil
+}
+
+// ValidateAddProductRequest validates the add product request
+func (v *VendorValidatorImpl) ValidateAddProductRequest(req *dto.AddProductRequest) error {
+	if req.Name == "" {
+		return errors.New("product name is required")
+	}
+	if len(req.Name) < 1 || len(req.Name) > 255 {
+		return errors.New("product name must be between 1 and 255 characters")
+	}
+
+	if len(req.Description) > 1000 {
+		return errors.New("description cannot exceed 1000 characters")
+	}
+
+	if req.Price < 0 {
+		return errors.New("price must be non-negative")
+	}
+
+	// Category validation: either category_id or category_name must be provided
+	if req.CategoryID == 0 && req.CategoryName == "" {
+		return errors.New("either category_id or category_name is required")
+	}
+
+	if req.CategoryName != "" && (len(req.CategoryName) < 1 || len(req.CategoryName) > 100) {
+		return errors.New("category name must be between 1 and 100 characters")
+	}
+
+	if req.SKU < 1 {
+		return errors.New("SKU must be greater than 0")
+	}
+
+	if len(req.ImageURL) > 500 {
+		return errors.New("image URL cannot exceed 500 characters")
+	}
+
+	if req.Stock < 0 {
+		return errors.New("stock must be non-negative")
+	}
+
+	return nil
+}
+
+// ValidateUpdateProductRequest validates the update product request
+func (v *VendorValidatorImpl) ValidateUpdateProductRequest(req *dto.UpdateProductRequest) error {
+	if req.Name != nil {
+		if len(*req.Name) < 1 || len(*req.Name) > 255 {
+			return errors.New("product name must be between 1 and 255 characters")
+		}
+	}
+
+	if req.Description != nil {
+		if len(*req.Description) > 1000 {
+			return errors.New("description cannot exceed 1000 characters")
+		}
+	}
+
+	if req.Price != nil {
+		if *req.Price < 0 {
+			return errors.New("price must be non-negative")
+		}
+	}
+
+	if req.SKU != nil {
+		if len(*req.SKU) > 50 {
+			return errors.New("SKU cannot exceed 50 characters")
+		}
+	}
+
+	if req.ImageURL != nil {
+		if len(*req.ImageURL) > 500 {
+			return errors.New("image URL cannot exceed 500 characters")
+		}
+	}
+
+	if req.Stock != nil {
+		if *req.Stock < 0 {
+			return errors.New("stock must be non-negative")
+		}
+	}
+
+	return nil
+}
+
+// ValidateProductQueryParam validates the product query parameters
+func (v *VendorValidatorImpl) ValidateProductQueryParam(queryParams *dto.ProductQueryParam) error {
+	if queryParams.Limit < 1 || queryParams.Limit > 100 {
+		return errors.New("limit must be between 1 and 100")
+	}
+
+	if queryParams.Offset < 0 {
+		return errors.New("offset must be non-negative")
+	}
+
+	if queryParams.Ordering != "" {
+		validOrderings := []string{"name", "price", "created_at", "updated_at"}
+		isValid := false
+		for _, validOrdering := range validOrderings {
+			if queryParams.Ordering == validOrdering {
+				isValid = true
+				break
+			}
+		}
+		if !isValid {
+			return errors.New("ordering must be one of: name, price, created_at, updated_at")
+		}
+	}
+
+	if len(queryParams.Search) > 100 {
+		return errors.New("search term cannot exceed 100 characters")
+	}
+
+	return nil
+}
+
+// ValidateIDParameter validates and parses ID parameters from URL
+func (v *VendorValidatorImpl) ValidateIDParameter(idStr, paramName string) (uint, error) {
+	if idStr == "" {
+		return 0, errors.New(paramName + " is required")
+	}
+
+	// Parse as uint
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		return 0, errors.New("invalid " + paramName + " format")
+	}
+
+	// Check if ID is valid (greater than 0)
+	if id == 0 {
+		return 0, errors.New(paramName + " must be greater than 0")
+	}
+
+	// Check reasonable upper limit
+	if id > 999999999 {
+		return 0, errors.New(paramName + " is too large")
+	}
+
+	return uint(id), nil
 }

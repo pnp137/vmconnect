@@ -6,6 +6,7 @@ type Vendor struct {
 	ID          uint      `gorm:"primaryKey" json:"id"`
 	UserID      uint      `gorm:"not null" json:"user_id"`
 	User        *User     `gorm:"foreignKey:UserID;references:ID" json:"user"` // Ensure User is defined in your models
+	VendorCode  string    `gorm:"uniqueIndex;size:10;not null" json:"vendor_code"`
 	CompanyName string    `json:"company_name"`
 	GSTNumber   string    `json:"gst_number"`
 	Address     string    `json:"address"`

@@ -10,9 +10,10 @@ type Product struct {
 	VendorID      uint       `gorm:"not null" json:"vendor_id"`
 	Vendor        Vendor     `gorm:"foreignKey:VendorID" json:"vendor"`
 	CategoryID    uint       `gorm:"not null" json:"category_id"` // ✅ linked to Categories table
+	Category      Category   `gorm:"foreignKey:CategoryID;references:ID" json:"category"`
 	Name          string     `gorm:"size:255" json:"name"`
 	Description   string     `gorm:"type:text" json:"description"`
-	Category      string     `gorm:"size:100" json:"category"`
+	CategoryName  string     `gorm:"size:100" json:"category_name"`
 	SKU           int        `gorm:"uniqueIndex" json:"sku"`
 	Unit          string     `gorm:"size:50" json:"unit"` // e.g. "box", "kg", "piece"
 	Price         float64    `json:"price"`

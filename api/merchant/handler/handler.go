@@ -67,6 +67,39 @@ func (h *MerchantHandler) Register(c *fiber.Ctx) error {
 	return response.WriteHTTPResponse(c, 201, body)
 }
 
+// GetMerchantInfo handles GET /merchants/{mid}
+func (h *MerchantHandler) GetMerchantInfo(c *fiber.Ctx) error {
+	log := logger.NewLogger()
+	logPrefix := "[MerchantHandler.GetMerchantInfo] "
+
+	// Get merchant ID from URL parameter
+	merchantIDStr := c.Params("mid")
+	merchantID, err := h.validator.ValidateIDParameter(merchantIDStr, "merchant ID")
+	if err != nil {
+		log.Debug(logPrefix + "Invalid merchant ID: " + merchantIDStr)
+		errorBody := response.GetErrorHTTPResponseBody(400, err.Error())
+		return response.WriteHTTPResponse(c, 400, errorBody)
+	}
+
+	log.Debug(logPrefix + "Getting merchant info for ID: " + merchantIDStr)
+
+	// Call service
+	merchantInfo, errDetails := h.service.GetMerchantInfo(c.UserContext(), uint(merchantID))
+	if errDetails != nil {
+		log.Error(errDetails.Error, logPrefix+"Error getting merchant info: "+errDetails.Message)
+		errorBody := response.GetErrorHTTPResponseBody(errDetails.Code, errDetails.Message)
+		return response.WriteHTTPResponse(c, errDetails.Code, errorBody)
+	}
+
+	log.Info(logPrefix + "Successfully retrieved merchant info for ID: " + merchantIDStr)
+
+	// Return success response
+	body := &response.HTTPResponse{
+		Content: merchantInfo,
+	}
+	return response.WriteHTTPResponse(c, 200, body)
+}
+
 // parseAndGetRegisterRequest parses the request body into MerchantRegisterRequest
 func parseAndGetRegisterRequest(c *fiber.Ctx, body *dto.MerchantRegisterRequest) error {
 	return json.Unmarshal([]byte(c.Body()), body)
