@@ -7,17 +7,22 @@ import (
 	"linksupply.io/vmconnect/system"
 )
 
-// MerchantRepository defines the interface for merchant repository
+// MerchantRepository defines the interface for merchant repository operations
 type MerchantRepository interface {
+	// User operations
 	CreateUser(user *models.User) (*models.User, error)
-	CreateMerchant(merchant *models.Merchant) (*models.Merchant, error)
 	GetUserByEmailOrPhone(email, phone string) (*models.User, error)
-	GetRoleByName(roleName string) (*models.Role, error)
+
+	// Merchant operations
+	CreateMerchant(merchant *models.Merchant) (*models.Merchant, error)
+	GetMerchantByID(merchantID uint) (*models.Merchant, error)
+	GetMerchantByUserID(userID uint) (*models.Merchant, error)
+
+	// Vendor operations
 	GetAndValidateVendorByCode(vendorCode string) (*models.Vendor, error)
 	CreateVendorMerchantMapping(mapping *models.VendorMerchantMapping) (*models.VendorMerchantMapping, error)
 	GetMerchantVendors(merchantID uint) ([]models.Vendor, error)
 	GetVendorProductsForMerchant(merchantID, vendorID uint) ([]models.Product, error)
-	GetMerchantByID(merchantID uint) (*models.Merchant, error)
 	GetVendorCategoriesForMerchant(merchantID, vendorID uint) ([]models.Category, error)
 	GetVendorProductsByCategoryForMerchant(merchantID, vendorID uint, queryParams *dto.ProductQueryParam) ([]models.Product, int, error)
 	// Cart operations
@@ -76,16 +81,6 @@ func (r *MerchantRepositoryImpl) GetUserByEmailOrPhone(email, phone string) (*mo
 	var user models.User
 	err := r.db.Where("(email = ? OR phone = ?) AND is_deleted = ?", email, phone, false).First(&user).Error
 	return &user, err
-}
-
-// GetRoleByName retrieves role by name
-func (r *MerchantRepositoryImpl) GetRoleByName(roleName string) (*models.Role, error) {
-	var role models.Role
-	err := r.db.Where("name = ? AND is_deleted = ?", roleName, false).First(&role).Error
-	if err != nil {
-		return nil, err
-	}
-	return &role, nil
 }
 
 // GetAndValidateVendorByCode validates vendor code and returns vendor if valid
@@ -151,6 +146,16 @@ func (r *MerchantRepositoryImpl) GetVendorProductsForMerchant(merchantID, vendor
 func (r *MerchantRepositoryImpl) GetMerchantByID(merchantID uint) (*models.Merchant, error) {
 	var merchant models.Merchant
 	err := r.db.Model(&models.Merchant{}).Preload("User").Where("id = ? AND is_deleted = ?", merchantID, false).First(&merchant).Error
+	if err != nil {
+		return nil, err
+	}
+	return &merchant, nil
+}
+
+// GetMerchantByUserID gets merchant by user ID
+func (r *MerchantRepositoryImpl) GetMerchantByUserID(userID uint) (*models.Merchant, error) {
+	var merchant models.Merchant
+	err := r.db.Where("user_id = ? AND is_deleted = ?", userID, false).First(&merchant).Error
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +271,7 @@ func (r *MerchantRepositoryImpl) GetOrCreateCartOrder(merchantID, vendorID uint)
 
 	// Try to find existing cart order
 	err := r.db.Where("merchant_id = ? AND vendor_id = ? AND status = ? AND is_deleted = ?",
-		merchantID, vendorID, models.ORDER_PLACED, false).First(&order).Error
+		merchantID, vendorID, models.ORDER_IN_CART, false).First(&order).Error
 
 	if err == nil {
 		return &order, nil
@@ -276,7 +281,7 @@ func (r *MerchantRepositoryImpl) GetOrCreateCartOrder(merchantID, vendorID uint)
 		return nil, err
 	}
 
-	orderStatus := models.ORDER_PLACED
+	orderStatus := models.ORDER_IN_CART
 	// Create new cart order
 	order = models.Order{
 		MerchantID:  merchantID,

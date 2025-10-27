@@ -7,24 +7,28 @@ import (
 )
 
 // VendorRepository defines the interface for vendor repository
+// VendorRepository defines the interface for vendor repository operations
 type VendorRepository interface {
+	// User operations
 	CreateUser(user *models.User) (*models.User, error)
-	CreateVendor(vendor *models.Vendor) (*models.Vendor, error)
 	GetUserByEmailOrPhone(email, phone string) (*models.User, error)
-	GetRoleByName(roleName string) (*models.Role, error)
+	// Vendor operations
+	CreateVendor(vendor *models.Vendor) (*models.Vendor, error)
 	GetVendorByID(vendorID uint) (*models.Vendor, error)
+
 	// Order operations
 	GetOrderByID(orderID uint) (*models.Order, error)
 	UpdateOrderStatus(orderID uint, status models.OrderStatus) error
 	CreateOrderActivity(activity *models.OrderActivity) (*models.OrderActivity, error)
 	CheckStatusInHistory(orderID uint, status models.OrderStatus) (bool, *models.OrderActivity, error)
+	UpdateOrder(order *models.Order) error
+
 	// Payment operations
 	CreatePayment(payment *models.Payment) (*models.Payment, error)
 	UpdatePayment(payment *models.Payment) error
 	GetPaymentByID(paymentID uint64) (*models.Payment, error)
 	GetOrderPayments(orderID uint) ([]models.Payment, error)
 	RecalculateOrderPayments(orderID uint) error
-	UpdateOrder(order *models.Order) error
 }
 
 type VendorRepositoryImpl struct {
@@ -57,16 +61,6 @@ func (r *VendorRepositoryImpl) GetUserByEmailOrPhone(email, phone string) (*mode
 	var user models.User
 	err := r.db.Where("(email = ? OR phone = ?) AND is_deleted = ?", email, phone, false).First(&user).Error
 	return &user, err
-}
-
-// GetRoleByName retrieves role by name
-func (r *VendorRepositoryImpl) GetRoleByName(roleName string) (*models.Role, error) {
-	var role models.Role
-	err := r.db.Where("name = ? AND is_deleted = ?", roleName, false).First(&role).Error
-	if err != nil {
-		return nil, err
-	}
-	return &role, nil
 }
 
 // GetVendorByID gets vendor by ID with user info preloaded

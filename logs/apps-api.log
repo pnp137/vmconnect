@@ -118,3 +118,5 @@
 {"L":"info","Service":"apps-api","T":"2025-10-28T02:00:48+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
 {"L":"debug","Service":"apps-api","T":"2025-10-28T02:02:04+05:30","message":"[MerchantHandler.GetMerchantInfo] Getting merchant info for ID: 1"}
 {"L":"info","Service":"apps-api","T":"2025-10-28T02:02:04+05:30","message":"[MerchantHandler.GetMerchantInfo] Successfully retrieved merchant info for ID: 1"}
+{"L":"info","Service":"apps-api","T":"2025-10-28T02:14:38+05:30","message":"Terminating api server: via signal"}
+{"L":"info","Service":"apps-api","T":"2025-10-28T02:14:43+05:30","message":"Starting webserver for vmconnect-api provider on port :8080"}
