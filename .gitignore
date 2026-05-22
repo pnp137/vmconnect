@@ -27,6 +27,19 @@ go.work.sum
 # env file
 .env
 
+# Runtime logs
+logs/
+build/logs/
+*.log
+
+# Local build/runtime artifacts
+tmp/
+
+# macOS
+.DS_Store
+
 # Editor/IDE
 # .idea/
 # .vscode/
+ .dockerignore
+ .air.toml

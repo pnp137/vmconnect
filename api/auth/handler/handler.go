@@ -67,7 +67,83 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	return response.WriteHTTPResponse(c, 200, body)
 }
 
+// GenerateOTP handles OTP generation requests.
+func (h *AuthHandler) GenerateOTP(c *fiber.Ctx) error {
+	log := logger.NewLogger()
+	logPrefix := "handler.GenerateOTP: "
+
+	reqBody := &dto.GenerateOTPRequest{}
+	if err := parseAndGetRequest(c, reqBody); err != nil {
+		log.Error(err, logPrefix+"Error in parsing the request body")
+		body := response.GetErrorHTTPResponseBody(400, "Invalid Request Body")
+		return response.WriteHTTPResponse(c, 400, body)
+	}
+
+	log.Debug(logPrefix + "OTP generation request received for username: " + reqBody.Username)
+
+	if err := h.validator.ValidateGenerateOTPRequest(reqBody); err != nil {
+		log.Error(err, logPrefix+"Error in validating OTP generation request")
+		body := response.GetErrorHTTPResponseBody(400, err.Error())
+		return response.WriteHTTPResponse(c, 400, body)
+	}
+
+	otpRequestDto := dto.ToGenerateOTPRequestDto(reqBody)
+	otpResponse, errorDetails := h.service.GenerateOTP(c.UserContext(), otpRequestDto)
+	if errorDetails != nil {
+		log.Error(errorDetails.Error, logPrefix+"Error in OTP generation process")
+		body := response.GetErrorHTTPResponseBody(errorDetails.Code, errorDetails.Message)
+		return response.WriteHTTPResponse(c, errorDetails.Code, body)
+	}
+
+	log.Info(logPrefix + "OTP generated for username: " + reqBody.Username)
+
+	body := &response.HTTPResponse{
+		Content: otpResponse,
+	}
+	return response.WriteHTTPResponse(c, 200, body)
+}
+
+// ValidateOTP handles OTP validation requests and returns a token response.
+func (h *AuthHandler) ValidateOTP(c *fiber.Ctx) error {
+	log := logger.NewLogger()
+	logPrefix := "handler.ValidateOTP: "
+
+	reqBody := &dto.ValidateOTPRequest{}
+	if err := parseAndGetRequest(c, reqBody); err != nil {
+		log.Error(err, logPrefix+"Error in parsing the request body")
+		body := response.GetErrorHTTPResponseBody(400, "Invalid Request Body")
+		return response.WriteHTTPResponse(c, 400, body)
+	}
+
+	log.Debug(logPrefix + "OTP validation request received for username: " + reqBody.Username)
+
+	if err := h.validator.ValidateValidateOTPRequest(reqBody); err != nil {
+		log.Error(err, logPrefix+"Error in validating OTP validation request")
+		body := response.GetErrorHTTPResponseBody(400, err.Error())
+		return response.WriteHTTPResponse(c, 400, body)
+	}
+
+	otpRequestDto := dto.ToValidateOTPRequestDto(reqBody)
+	authResponse, errorDetails := h.service.ValidateOTP(c.UserContext(), otpRequestDto)
+	if errorDetails != nil {
+		log.Error(errorDetails.Error, logPrefix+"Error in OTP validation process")
+		body := response.GetErrorHTTPResponseBody(errorDetails.Code, errorDetails.Message)
+		return response.WriteHTTPResponse(c, errorDetails.Code, body)
+	}
+
+	log.Info(logPrefix + "OTP login successful for username: " + reqBody.Username)
+
+	body := &response.HTTPResponse{
+		Content: authResponse,
+	}
+	return response.WriteHTTPResponse(c, 200, body)
+}
+
 // parseAndGetLoginRequest parses the request body into LoginRequest
 func parseAndGetLoginRequest(c *fiber.Ctx, body *dto.LoginRequest) error {
+	return parseAndGetRequest(c, body)
+}
+
+func parseAndGetRequest(c *fiber.Ctx, body interface{}) error {
 	return json.Unmarshal([]byte(c.Body()), body)
 }

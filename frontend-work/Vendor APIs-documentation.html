@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor APIs - API Documentation</title>
+    <style>
+        body { margin: 0; padding: 0; }
+        #opencollection-container { width: 100vw; height: 100vh; }
+    </style>
+    <link rel="stylesheet" href="https://cdn.opencollection.com/docs.css">
+    <script src="https://cdn.opencollection.com/docs.js"></script>
+</head>
+<body>
+    <div id="opencollection-container"></div>
+    <script>
+        const collectionData = "opencollection: 1.0.0\ninfo:\n  name: Vendor APIs\nconfig:\n  proxy:\n    inherit: true\n    config:\n      protocol: http\n      hostname: ''\n      port: ''\n      auth:\n        username: ''\n        password: ''\n      bypassProxy: ''\nitems:\n  - info:\n      name: Login-Email\n      type: http\n      seq: 1\n    http:\n      method: POST\n      url: http://localhost:8080/api/auth/login\n      headers:\n        - name: Content-Type\n          value: application/json\n      body:\n        type: json\n        data: |-\n          {\n              \"username\": \"john@example.com\",\n              \"password\": \"password123\"\n            }\n      auth: inherit\n    settings:\n      encodeUrl: true\n      timeout: 0\n      followRedirects: true\n      maxRedirects: 5\n  - info:\n      name: Login-Mobile\n      type: http\n      seq: 2\n    http:\n      method: POST\n      url: http://localhost:8080/api/auth/login\n      headers:\n        - name: Content-Type\n          value: application/json\n      body:\n        type: json\n        data: |-\n          {\n              \"username\": \"9876543210\",\n              \"password\": \"password123\"\n            }\n      auth: inherit\n    settings:\n      encodeUrl: true\n      timeout: 0\n      followRedirects: true\n      maxRedirects: 5\n  - info:\n      name: Register - Vendor\n      type: http\n      seq: 3\n    http:\n      method: GET\n      url: '?Content-Type=application/json'\n      params:\n        - name: Content-Type\n          value: application/json\n          type: query\n      body:\n        type: json\n        data: |2-\n            {\n              \"name\": \"John Doe\",\n              \"email\": \"john@example.com\",\n              \"phone\": \"9876543210\",\n              \"password\": \"password123\",\n              \"company_name\": \"Tech Solutions Ltd\",\n              \"gst_number\": \"22ABCDE1234F1Z5\",\n              \"address\": \"123 Business Street, Mumbai, Maharashtra\",\n              \"logo_url\": \"https://example.com/logo.png\"\n            }\n      auth: inherit\n    settings:\n      encodeUrl: true\n      timeout: 0\n      followRedirects: true\n      maxRedirects: 5\n  - info:\n      name: Generate OTP\n      type: http\n      seq: 4\n    http:\n      method: POST\n      url: http://localhost:8080/api/auth/generate-otp\n      headers:\n        - name: Content-Type\n          value: application/json\n      body:\n        type: json\n        data: |-\n          {\n            \"username\": \"parth1@example.com\"\n          }\n      auth: inherit\n    settings:\n      encodeUrl: true\n      timeout: 0\n      followRedirects: true\n      maxRedirects: 5\n  - info:\n      name: Validate OTP\n      type: http\n      seq: 5\n    http:\n      method: post\n      url: http://localhost:8080/api/auth/validate-otp\n      headers:\n        - name: Content-Type\n          value: application/json\n      body:\n        type: json\n        data: |-\n          {\n            \"username\": \"parth1@example.com\",\n            \"otp\": \"052592\"\n          }\n      auth: inherit\n    settings:\n      encodeUrl: false\n      timeout: 0\n      followRedirects: true\n      maxRedirects: 5\n  - info:\n      name: Get Vendor\n      type: http\n      seq: 6\n    http:\n      method: GET\n      url: http://localhost:8080/api/v0/vendor/1\n      headers:\n        - name: Content-Type\n          value: application/json\n      auth: inherit\n    settings:\n      encodeUrl: true\n      timeout: 0\n      followRedirects: true\n      maxRedirects: 5\nbundled: true\nextensions:\n  bruno:\n    ignore:\n      - node_modules\n      - .git\n    exportedAt: '2026-05-22T19:10:55.618Z'\n    exportedUsing: Bruno/3.4.1\n";
+        new window.OpenCollection({
+            target: document.getElementById('opencollection-container'),
+            opencollection: collectionData,
+            theme: 'light'
+        });
+    </script>
+</body>
+</html>

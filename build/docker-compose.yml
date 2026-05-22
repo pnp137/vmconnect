@@ -1,0 +1,70 @@
+name: vmconnect
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: vmconnect-db
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-vmconnect}
+      MYSQL_USER: ${MYSQL_USER:-vmconnect_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-vmconnect_pass}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - vmconnect-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpass}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  api:
+    build:
+      context: ..
+      dockerfile: build/Dockerfile.backend
+      target: dev
+    container_name: vmconnect-api
+    restart: unless-stopped
+    ports:
+      - "${LISTEN_PORT:-8080}:8080"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-vmconnect_user}
+      DB_PASSWORD: ${DB_PASSWORD:-vmconnect_pass}
+      DB_NAME: ${DB_NAME:-vmconnect}
+      LISTEN_PORT: 8080
+      LOG_LEVEL: ${LOG_LEVEL:-DEBUG}
+      LOGS_DIR: /app/logs
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
+    volumes:
+      - ..:/app
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache/go-build
+      - ../logs:/app/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - vmconnect-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mysql_data:
+  go_mod_cache:
+  go_build_cache:
+
+networks:
+  vmconnect-network:
+    driver: bridge

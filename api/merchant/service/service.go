@@ -77,9 +77,7 @@ func (s *MerchantServiceImpl) RegisterMerchant(ctx context.Context, registerDto 
 		}
 	}
 
-	// Set merchant role
 	merchantRole := models.ROLE_MERCHANT
-
 	// Create user
 	user := &models.User{
 		Name:         registerDto.Name,
@@ -155,7 +153,7 @@ func (s *MerchantServiceImpl) RegisterMerchant(ctx context.Context, registerDto 
 			ShopName: createdMerchant.ShopName,
 			Address:  createdMerchant.Address,
 			Pincode:  createdMerchant.Pincode,
-			Role:     "merchant",
+			Role:     models.ROLE_MERCHANT.String(),
 		},
 		Message: "Merchant registered successfully",
 	}
@@ -191,7 +189,7 @@ func (s *MerchantServiceImpl) GetMerchantInfo(ctx context.Context, merchantID ui
 		ShopName: merchant.ShopName,
 		Address:  merchant.Address,
 		Pincode:  merchant.Pincode,
-		Role:     "merchant",
+		Role:     models.ROLE_MERCHANT.String(),
 	}
 
 	return merchantInfo, nil

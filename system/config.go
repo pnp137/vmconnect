@@ -107,7 +107,6 @@ func NewConfig() *Config {
 	config.Concurrency = 5
 	config.Db = parseDbConfig()
 	setExternalService(config)
-	setArtifacthubEsperAppsUrlPrefix(config)
 	appConfig = config
 	return appConfig
 }
@@ -121,15 +120,6 @@ func (c *Config) String() string {
 }
 
 func setExternalService(config *Config) {
-}
-
-func setArtifacthubEsperAppsUrlPrefix(config *Config) {
-	ArtifacthubEsperAppsUrlPrefix, ok := os.LookupEnv("ARTIFACTHUB_ESPER_APPS_URL_PREFIX")
-	if !ok {
-		config.ArtifacthubEsperAppsUrlPrefix = "" // TO be updated later
-	} else {
-		config.ArtifacthubEsperAppsUrlPrefix = ArtifacthubEsperAppsUrlPrefix
-	}
 }
 
 func parseDbConfig() DbConfig {

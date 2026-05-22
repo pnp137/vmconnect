@@ -32,6 +32,8 @@ func SetupCommonRoutes(server *APIServer) {
 
 	// Common authentication routes
 	server.app.Post("/api/auth/login", authHand.Login)
+	server.app.Post("/api/auth/generate-otp", authHand.GenerateOTP)
+	server.app.Post("/api/auth/validate-otp", authHand.ValidateOTP)
 }
 
 func SetupHealthRoutes(server *APIServer) {

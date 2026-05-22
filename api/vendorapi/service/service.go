@@ -59,16 +59,15 @@ func (s *VendorServiceImpl) RegisterVendor(ctx context.Context, registerDto *dto
 		}
 	}
 
-	// Set vendor role
-	vendorRole := models.ROLE_VENDOR
-
 	// Create user
+	vendorRole := models.ROLE_VENDOR
 	user := &models.User{
 		Name:         registerDto.Name,
 		Email:        registerDto.Email,
 		Phone:        registerDto.Phone,
 		PasswordHash: hashedPassword,
 		RoleID:       &vendorRole,
+		IsActive:     true,
 	}
 
 	createdUser, err := s.repository.CreateUser(user)
@@ -121,7 +120,7 @@ func (s *VendorServiceImpl) RegisterVendor(ctx context.Context, registerDto *dto
 			GSTNumber:   createdVendor.GSTNumber,
 			Address:     createdVendor.Address,
 			LogoURL:     createdVendor.LogoURL,
-			Role:        "vendor",
+			Role:        models.ROLE_VENDOR.String(),
 		},
 		Message: "Vendor registered successfully",
 	}
@@ -159,7 +158,7 @@ func (s *VendorServiceImpl) GetVendorInfo(ctx context.Context, vendorID uint) (*
 		GSTNumber:   vendor.GSTNumber,
 		Address:     vendor.Address,
 		LogoURL:     vendor.LogoURL,
-		Role:        "vendor",
+		Role:        models.ROLE_VENDOR.String(),
 	}
 
 	return vendorInfo, nil

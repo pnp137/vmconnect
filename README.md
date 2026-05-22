@@ -1,12 +1,27 @@
-# vm-backend
-Backend for vendor merchant apps
+# VMConnect Backend
 
+Backend API for vendor and merchant apps.
 
+## Frontend Setup
 
+Use [FRONTEND_SETUP.md](FRONTEND_SETUP.md) to run the backend locally.
 
-docker run --name merchant-mysql \
-  -e MYSQL_ROOT_PASSWORD=rootpass \
-  -e MYSQL_DATABASE=merchantdb \
-  -p 3306:3306 \
-  -v ~/mysql_data:/var/lib/mysql \
-  -d mysql:8
+## Common Commands
+
+```bash
+docker compose -f build/docker-compose.yml up -d --build
+```
+
+```bash
+curl http://localhost:8080/health
+```
+
+```bash
+docker compose -f build/docker-compose.yml down
+```
+
+## API Base URL
+
+```text
+http://localhost:8080
+```

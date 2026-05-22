@@ -15,6 +15,35 @@ type LoginRequestDto struct {
 	IsEmail  bool // true if username is email, false if mobile
 }
 
+// GenerateOTPRequest represents a request to generate an OTP for login.
+type GenerateOTPRequest struct {
+	Username string `json:"username" validate:"required"` // Can be email or mobile number
+}
+
+// GenerateOTPRequestDto represents the internal DTO for OTP generation.
+type GenerateOTPRequestDto struct {
+	Username string
+	IsEmail  bool // true if username is email, false if mobile
+}
+
+// ValidateOTPRequest represents a request to validate an OTP and login.
+type ValidateOTPRequest struct {
+	Username string `json:"username" validate:"required"` // Can be email or mobile number
+	OTP      string `json:"otp" validate:"required"`
+}
+
+// ValidateOTPRequestDto represents the internal DTO for OTP validation.
+type ValidateOTPRequestDto struct {
+	Username string
+	OTP      string
+	IsEmail  bool // true if username is email, false if mobile
+}
+
+// OTPResponse represents the OTP generation response.
+type OTPResponse struct {
+	Message string `json:"message"`
+}
+
 // AuthResponse represents the authentication response
 type AuthResponse struct {
 	Token   string      `json:"token"`
@@ -51,12 +80,39 @@ type VendorUserInfo struct {
 // ToLoginRequestDto converts LoginRequest to LoginRequestDto
 func ToLoginRequestDto(req *LoginRequest) *LoginRequestDto {
 	// Determine if username is email or mobile number
-	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	isEmail, _ := regexp.MatchString(emailRegex, req.Username)
+	isEmail := IsEmail(req.Username)
 
 	return &LoginRequestDto{
 		Username: req.Username,
 		Password: req.Password,
 		IsEmail:  isEmail,
 	}
+}
+
+// ToGenerateOTPRequestDto converts GenerateOTPRequest to GenerateOTPRequestDto.
+func ToGenerateOTPRequestDto(req *GenerateOTPRequest) *GenerateOTPRequestDto {
+	isEmail := IsEmail(req.Username)
+
+	return &GenerateOTPRequestDto{
+		Username: req.Username,
+		IsEmail:  isEmail,
+	}
+}
+
+// ToValidateOTPRequestDto converts ValidateOTPRequest to ValidateOTPRequestDto.
+func ToValidateOTPRequestDto(req *ValidateOTPRequest) *ValidateOTPRequestDto {
+	isEmail := IsEmail(req.Username)
+
+	return &ValidateOTPRequestDto{
+		Username: req.Username,
+		OTP:      req.OTP,
+		IsEmail:  isEmail,
+	}
+}
+
+// IsEmail returns true when the username is an email address.
+func IsEmail(username string) bool {
+	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	isEmail, _ := regexp.MatchString(emailRegex, username)
+	return isEmail
 }
