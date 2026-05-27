@@ -6,241 +6,641 @@
   },
   "item": [
     {
-      "name": "Login-Email",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "disabled": false,
-            "type": "default"
+      "name": "Login/Auth",
+      "item": [
+        {
+          "name": "Login-Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"john@example.com\",\n    \"password\": \"password123\"\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
-        ],
-        "auth": {
-          "type": "noauth"
         },
-        "description": "",
-        "url": {
-          "raw": "http://localhost:8080/api/auth/login",
-          "protocol": "http",
-          "host": [
-            "localhost:8080"
-          ],
-          "path": [
-            "api",
-            "auth",
-            "login"
-          ],
-          "query": [],
-          "variable": []
+        {
+          "name": "Generate OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/auth/generate-otp",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "generate-otp"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"9276533110\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"username\": \"john@example.com\",\n    \"password\": \"password123\"\n  }",
-          "options": {
-            "raw": {
-              "language": "json"
+        {
+          "name": "Validate OTP",
+          "request": {
+            "method": "post",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/auth/validate-otp",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "validate-otp"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"9276533110\",\n  \"otp\": \"111111\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login-Mobile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"9876543210\",\n    \"password\": \"password123\"\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Register - Vendor",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "?Content-Type=application/json",
+              "protocol": "",
+              "host": [
+                "?Content-Type=application"
+              ],
+              "path": [
+                "json"
+              ],
+              "query": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "  {\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"phone\": \"9876543210\",\n    \"password\": \"password123\",\n    \"company_name\": \"Tech Solutions Ltd\",\n    \"gst_number\": \"22ABCDE1234F1Z5\",\n    \"address\": \"123 Business Street, Mumbai, Maharashtra\",\n    \"logo_url\": \"https://example.com/logo.png\"\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         }
-      }
+      ]
     },
     {
-      "name": "Login-Mobile",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "disabled": false,
-            "type": "default"
+      "name": "Merchant",
+      "item": [
+        {
+          "name": "GET Merchant (Filter By Id)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzc5OTk2ODgxLCJuYmYiOjE3Nzk5MTA0ODEsImlhdCI6MTc3OTkxMDQ4MX0.j17Vmo2tuZQWT6NrPFeFx2lN8o71AOWseK5MwrcZhvE",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/merchants?merchant_id=53",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "merchants"
+              ],
+              "query": [
+                {
+                  "key": "merchant_id",
+                  "value": "53"
+                }
+              ],
+              "variable": []
+            }
           }
-        ],
-        "auth": {
-          "type": "noauth"
         },
-        "description": "",
-        "url": {
-          "raw": "http://localhost:8080/api/auth/login",
-          "protocol": "http",
-          "host": [
-            "localhost:8080"
-          ],
-          "path": [
-            "api",
-            "auth",
-            "login"
-          ],
-          "query": [],
-          "variable": []
+        {
+          "name": "GET Merchant (Filter By Bussiness Name) copy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzc5OTk2ODgxLCJuYmYiOjE3Nzk5MTA0ODEsImlhdCI6MTc3OTkxMDQ4MX0.j17Vmo2tuZQWT6NrPFeFx2lN8o71AOWseK5MwrcZhvE",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/merchants?business_name=Mer",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "merchants"
+              ],
+              "query": [
+                {
+                  "key": "business_name",
+                  "value": "Mer"
+                }
+              ],
+              "variable": []
+            }
+          }
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"username\": \"9876543210\",\n    \"password\": \"password123\"\n  }",
-          "options": {
-            "raw": {
-              "language": "json"
+        {
+          "name": "GET Merchant (Filter By Pincode)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzc5NzQwNzUzLCJuYmYiOjE3Nzk2NTQzNTMsImlhdCI6MTc3OTY1NDM1M30.RJOOVRvv1ABW-GZFlZw6KNdrKjfQyNy31mnEdZpZxLo",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/merchants?pincode=0",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "merchants"
+              ],
+              "query": [
+                {
+                  "key": "pincode",
+                  "value": "0"
+                }
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "POST Merchant",
+          "request": {
+            "method": "post",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzc5NzQwNzUzLCJuYmYiOjE3Nzk2NTQzNTMsImlhdCI6MTc3OTY1NDM1M30.RJOOVRvv1ABW-GZFlZw6KNdrKjfQyNy31mnEdZpZxLo",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/merchants",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "merchants"
+              ],
+              "query": [
+                {
+                  "key": "",
+                  "value": ""
+                }
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Merchant Name - 4\",\n  \"email\": \"41merchant@example.com\",\n  \"phone\": \"4176543210\",\n  \"password\": \"secret123\",\n  \"business_name\": \"Merchant Business\",\n  \"shop_name\": \"Merchant Shop\",\n  \"address\": \"123 Main Street\",\n  \"pincode\": \"400001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         }
-      }
+      ]
     },
     {
-      "name": "Register - Vendor",
-      "protocolProfileBehavior": {
-        "disableBodyPruning": true
-      },
-      "request": {
-        "method": "GET",
-        "header": [],
-        "auth": {
-          "type": "noauth"
-        },
-        "description": "",
-        "url": {
-          "raw": "?Content-Type=application/json",
-          "protocol": "",
-          "host": [
-            "?Content-Type=application"
-          ],
-          "path": [
-            "json"
-          ],
-          "query": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "variable": []
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "  {\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"phone\": \"9876543210\",\n    \"password\": \"password123\",\n    \"company_name\": \"Tech Solutions Ltd\",\n    \"gst_number\": \"22ABCDE1234F1Z5\",\n    \"address\": \"123 Business Street, Mumbai, Maharashtra\",\n    \"logo_url\": \"https://example.com/logo.png\"\n  }",
-          "options": {
-            "raw": {
-              "language": "json"
+      "name": "Vendor Profile",
+      "item": [
+        {
+          "name": "Get Vendor",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzc5NzQwNzUzLCJuYmYiOjE3Nzk2NTQzNTMsImlhdCI6MTc3OTY1NDM1M30.RJOOVRvv1ABW-GZFlZw6KNdrKjfQyNy31mnEdZpZxLo",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2"
+              ],
+              "query": [],
+              "variable": []
             }
           }
         }
-      }
+      ]
     },
     {
-      "name": "Generate OTP",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "disabled": false,
-            "type": "default"
+      "name": "Products",
+      "item": [
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzgwMDA1MTAwLCJuYmYiOjE3Nzk5MTg3MDAsImlhdCI6MTc3OTkxODcwMH0.7vCD4rJ5QOG2wmXWK-_khvs5iqDCuqBaWjVvMym9lP4",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/products",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "products"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tuver Daal\",\n  \"description\": \"Premium aged daal\",\n  \"category_name\": \"Groccery\",\n  \"is_active\": true,\n  \"is_featured\": true,\n  \"image_urls\": [\n    \"https://example.com/rice-1.jpg\",\n    \"https://example.com/rice-2.jpg\"\n  ],\n  \"thumbnail_url\": \"https://example.com/rice-thumb.jpg\",\n  \"variants\": [\n    {\n      \"name\": \"1kg\",\n      \"unit\": \"kg\",\n      \"quantity\": 1,\n      \"price\": 120.0,\n      \"mrp\": 140.0,\n      \"moq\": 1,\n      \"stock\": 50,\n      \"is_active\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
-        ],
-        "auth": {
-          "type": "noauth"
         },
-        "description": "",
-        "url": {
-          "raw": "http://localhost:8080/api/auth/generate-otp",
-          "protocol": "http",
-          "host": [
-            "localhost:8080"
-          ],
-          "path": [
-            "api",
-            "auth",
-            "generate-otp"
-          ],
-          "query": [],
-          "variable": []
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "put",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzgwMDA1MTAwLCJuYmYiOjE3Nzk5MTg3MDAsImlhdCI6MTc3OTkxODcwMH0.7vCD4rJ5QOG2wmXWK-_khvs5iqDCuqBaWjVvMym9lP4",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/products/3",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "products",
+                "3"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Basmati Rice Premium\",\n  \"description\": \"Updated product description\",\n  \"category_name\": \"Premium Rice\",\n  \"is_featured\": false,\n  \"image_urls\": [\n    \"https://example.com/rice-1.jpg\",\n    \"https://example.com/rice-2.jpg\"\n  ],\n  \"thumbnail_url\": \"https://example.com/rice-thumb-v2.jpg\",\n  \"variants\": [\n    {\n      \"id\": 1,\n      \"name\": \"1kg\",\n      \"unit\": \"kg\",\n      \"quantity\": 1,\n      \"price\": 125.0,\n      \"mrp\": 145.0,\n      \"moq\": 1,\n      \"stock\": 40,\n      \"is_active\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"username\": \"parth1@example.com\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
+        {
+          "name": "Get Single Product",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzgwMDA1MTAwLCJuYmYiOjE3Nzk5MTg3MDAsImlhdCI6MTc3OTkxODcwMH0.7vCD4rJ5QOG2wmXWK-_khvs5iqDCuqBaWjVvMym9lP4",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/products/3",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "products",
+                "3"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzgwMDA1MTAwLCJuYmYiOjE3Nzk5MTg3MDAsImlhdCI6MTc3OTkxODcwMH0.7vCD4rJ5QOG2wmXWK-_khvs5iqDCuqBaWjVvMym9lP4",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/products?limit=20&offset=0&name_or_description=rice&is_active=true",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "name_or_description",
+                  "value": "rice"
+                },
+                {
+                  "key": "is_active",
+                  "value": "true"
+                }
+              ],
+              "variable": []
             }
           }
         }
-      }
-    },
-    {
-      "name": "Validate OTP",
-      "request": {
-        "method": "post",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "disabled": false,
-            "type": "default"
-          }
-        ],
-        "auth": {
-          "type": "noauth"
-        },
-        "description": "",
-        "url": {
-          "raw": "http://localhost:8080/api/auth/validate-otp",
-          "protocol": "http",
-          "host": [
-            "localhost:8080"
-          ],
-          "path": [
-            "api",
-            "auth",
-            "validate-otp"
-          ],
-          "query": [],
-          "variable": []
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"username\": \"parth1@example.com\",\n  \"otp\": \"052592\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "Get Vendor",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "disabled": false,
-            "type": "default"
-          }
-        ],
-        "auth": {
-          "type": "noauth"
-        },
-        "description": "",
-        "url": {
-          "raw": "http://localhost:8080/api/v0/vendor/1",
-          "protocol": "http",
-          "host": [
-            "localhost:8080"
-          ],
-          "path": [
-            "api",
-            "v0",
-            "vendor",
-            "1"
-          ],
-          "query": [],
-          "variable": []
-        }
-      }
+      ]
     }
   ],
   "variable": []
