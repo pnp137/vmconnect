@@ -2,10 +2,12 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
+	authRepository "linksupply.io/vmconnect/api/auth/repository"
 	vendorHandler "linksupply.io/vmconnect/api/vendorapi/handler"
 	vendorRepository "linksupply.io/vmconnect/api/vendorapi/repository"
 	vendorService "linksupply.io/vmconnect/api/vendorapi/service"
 	vendorValidator "linksupply.io/vmconnect/api/vendorapi/validator"
+	"linksupply.io/vmconnect/middleware"
 )
 
 func GetDefaultVendorHandler(server *APIServer) *vendorHandler.VendorHandler {
@@ -27,7 +29,8 @@ func GetDefaultVendorProductHandler(server *APIServer) *vendorHandler.VendorProd
 func GetDefaultVendorMerchantHandler(server *APIServer) *vendorHandler.VendorMerchantHandler {
 	// Initialize vendor merchant dependencies
 	repo := vendorRepository.NewVendorMerchantRepository(server.dataSource)
-	svc := vendorService.NewVendorMerchantService(repo)
+	listRepo := vendorRepository.NewVendorMerchantListRepository(server.dataSource)
+	svc := vendorService.NewVendorMerchantService(repo, listRepo)
 	return vendorHandler.NewVendorMerchantHandler(svc)
 }
 
@@ -47,104 +50,121 @@ func GetDefaultVendorPaymentHandler(server *APIServer) *vendorHandler.PaymentHan
 
 // SetupVendorRoutes wires vendor dependencies and registers vendor routes
 func SetupVendorRoutes(server *APIServer) {
-
 	app := server.app
 	vendorApi := app.Group("/api/v0/vendor")
 
-	// Vendor authentication routes
+	// Public vendor routes
 	vendorApi.Post("/register", func(c *fiber.Ctx) error {
 		vh := GetDefaultVendorHandler(server)
 		return vh.Register(c)
 	})
 
+	authRepo := authRepository.NewAuthRepository(server.dataSource)
+	vendorProtected := vendorApi.Group("", middleware.VendorAPIProtected()...)
+	vendorScoped := vendorProtected.Group("/:vid", middleware.RequireVendorOwnership(authRepo))
+
 	// Get vendor info by ID
-	vendorApi.Get("/:vid", func(c *fiber.Ctx) error {
+	vendorScoped.Get("", func(c *fiber.Ctx) error {
 		vh := GetDefaultVendorHandler(server)
 		return vh.GetVendorInfo(c)
 	})
 
 	// Product management routes
-	vendorApi.Post("/:vid/products", func(c *fiber.Ctx) error {
+	vendorScoped.Post("/products", func(c *fiber.Ctx) error {
 		ph := GetDefaultVendorProductHandler(server)
 		return ph.AddProduct(c)
 	})
 
-	vendorApi.Put("/:vid/products/:pid", func(c *fiber.Ctx) error {
+	vendorScoped.Put("/products/:pid", func(c *fiber.Ctx) error {
 		ph := GetDefaultVendorProductHandler(server)
 		return ph.UpdateProduct(c)
 	})
 
-	vendorApi.Delete("/:vid/products/:pid", func(c *fiber.Ctx) error {
+	vendorScoped.Delete("/products/:pid", func(c *fiber.Ctx) error {
 		ph := GetDefaultVendorProductHandler(server)
 		return ph.DeleteProduct(c)
 	})
 
-	vendorApi.Get("/:vid/products/:pid", func(c *fiber.Ctx) error {
+	vendorScoped.Get("/products/:pid", func(c *fiber.Ctx) error {
 		ph := GetDefaultVendorProductHandler(server)
 		return ph.GetProduct(c)
 	})
 
-	vendorApi.Get("/:vid/products", func(c *fiber.Ctx) error {
+	vendorScoped.Get("/products", func(c *fiber.Ctx) error {
 		ph := GetDefaultVendorProductHandler(server)
 		return ph.GetProducts(c)
 	})
 
-	vendorApi.Get("/:vid/products/categories", func(c *fiber.Ctx) error {
+	vendorScoped.Get("/products/categories", func(c *fiber.Ctx) error {
 		ph := GetDefaultVendorProductHandler(server)
 		return ph.GetCategories(c)
 	})
 
 	// Merchant management routes
-	vendorApi.Get("/:vid/merchants", func(c *fiber.Ctx) error {
+	vendorScoped.Post("/merchants", func(c *fiber.Ctx) error {
+		mh := GetDefaultVendorMerchantHandler(server)
+		return mh.AddMerchant(c)
+	})
+
+	vendorScoped.Get("/merchants", func(c *fiber.Ctx) error {
 		mh := GetDefaultVendorMerchantHandler(server)
 		return mh.GetMerchants(c)
 	})
 
-	vendorApi.Get("/:vid/merchants/:mid/visibility", func(c *fiber.Ctx) error {
+	vendorScoped.Put("/merchants/:mid", func(c *fiber.Ctx) error {
+		mh := GetDefaultVendorMerchantHandler(server)
+		return mh.UpdateMerchant(c)
+	})
+
+	vendorScoped.Delete("/merchants/:mid", func(c *fiber.Ctx) error {
+		mh := GetDefaultVendorMerchantHandler(server)
+		return mh.DeleteMerchant(c)
+	})
+
+	vendorScoped.Get("/merchants/:mid/visibility", func(c *fiber.Ctx) error {
 		mh := GetDefaultVendorMerchantHandler(server)
 		return mh.GetProductVisibility(c)
 	})
 
-	vendorApi.Patch("/:vid/merchants/:mid/visibility", func(c *fiber.Ctx) error {
+	vendorScoped.Patch("/merchants/:mid/visibility", func(c *fiber.Ctx) error {
 		mh := GetDefaultVendorMerchantHandler(server)
 		return mh.UpdateProductVisibility(c)
 	})
 
 	// Order state transition endpoints
-	vendorApi.Post("/:vid/orders/:oid/confirm", func(c *fiber.Ctx) error {
+	vendorScoped.Post("/orders/:oid/confirm", func(c *fiber.Ctx) error {
 		oh := GetDefaultVendorOrderHandler(server)
 		return oh.ConfirmOrder(c)
 	})
 
-	vendorApi.Post("/:vid/orders/:oid/invoice", func(c *fiber.Ctx) error {
+	vendorScoped.Post("/orders/:oid/invoice", func(c *fiber.Ctx) error {
 		oh := GetDefaultVendorOrderHandler(server)
 		return oh.GenerateInvoice(c)
 	})
 
-	vendorApi.Post("/:vid/orders/:oid/dispatch", func(c *fiber.Ctx) error {
+	vendorScoped.Post("/orders/:oid/dispatch", func(c *fiber.Ctx) error {
 		oh := GetDefaultVendorOrderHandler(server)
 		return oh.DispatchOrder(c)
 	})
 
 	// Payment endpoints (new flexible payment system)
-	vendorApi.Post("/:vid/orders/:oid/mark-paid", func(c *fiber.Ctx) error {
+	vendorScoped.Post("/orders/:oid/mark-paid", func(c *fiber.Ctx) error {
 		ph := GetDefaultVendorPaymentHandler(server)
 		return ph.MarkOrderAsPaid(c)
 	})
 
-	vendorApi.Get("/:vid/orders/:oid/payments", func(c *fiber.Ctx) error {
+	vendorScoped.Get("/orders/:oid/payments", func(c *fiber.Ctx) error {
 		ph := GetDefaultVendorPaymentHandler(server)
 		return ph.GetOrderPayments(c)
 	})
 
-	vendorApi.Post("/:vid/orders/:oid/payments/:pid/verify", func(c *fiber.Ctx) error {
+	vendorScoped.Post("/orders/:oid/payments/:pid/verify", func(c *fiber.Ctx) error {
 		ph := GetDefaultVendorPaymentHandler(server)
 		return ph.VerifyPayment(c)
 	})
 
-	vendorApi.Post("/:vid/orders/:oid/cancel", func(c *fiber.Ctx) error {
+	vendorScoped.Post("/orders/:oid/cancel", func(c *fiber.Ctx) error {
 		oh := GetDefaultVendorOrderHandler(server)
 		return oh.CancelOrder(c)
 	})
-
 }

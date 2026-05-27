@@ -23,6 +23,7 @@ func Migrate(db *gorm.DB) {
 		// Entities that depend on Vendor
 		&models.Category{},
 		&models.Product{},
+		&models.ProductVariant{},
 
 		// Junction/relationship tables
 		&models.VendorMerchantMapping{},

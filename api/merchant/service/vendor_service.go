@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"gorm.io/gorm"
 	"linksupply.io/vmconnect/api/merchant/dto"
@@ -150,22 +151,34 @@ func (s *MerchantVendorServiceImpl) GetVendorProducts(ctx context.Context, merch
 	totalCount := 0
 
 	for _, product := range products {
+		categoryName := product.Category.Name
+		variant := getPrimaryVariant(&product)
+		sku := 0
+		unit := ""
+		price := 0.0
+		stock := 0
+		if variant != nil {
+			sku, _ = strconv.Atoi(variant.Name)
+			unit = variant.Unit
+			price = variant.Price
+			stock = variant.Stock
+		}
 		productInfo := dto.ProductInfo{
 			ID:           product.ID,
 			Name:         product.Name,
 			Description:  product.Description,
-			Category:     product.CategoryName,
-			SKU:          product.SKU,
-			Unit:         product.Unit,
-			Price:        product.Price,
-			Stock:        product.Stock,
-			ImageURL:     product.ImageURL,
-			ThumbnailURL: product.ThumbnailURL,
+			Category:     categoryName,
+			SKU:          sku,
+			Unit:         unit,
+			Price:        price,
+			Stock:        stock,
+			ImageURLs:    []string(product.ImageURLs),
+			ThumbnailURL: "",
 			IsActive:     product.IsActive,
 			IsFeatured:   product.IsFeatured,
 		}
 
-		categories[product.CategoryName] = append(categories[product.CategoryName], productInfo)
+		categories[categoryName] = append(categories[categoryName], productInfo)
 		totalCount++
 	}
 
@@ -217,17 +230,29 @@ func (s *MerchantVendorServiceImpl) GetVendorProductsByCategory(ctx context.Cont
 	// Convert to DTO
 	productInfos := make([]dto.ProductInfo, len(products))
 	for i, product := range products {
+		categoryName := product.Category.Name
+		variant := getPrimaryVariant(&product)
+		sku := 0
+		unit := ""
+		price := 0.0
+		stock := 0
+		if variant != nil {
+			sku, _ = strconv.Atoi(variant.Name)
+			unit = variant.Unit
+			price = variant.Price
+			stock = variant.Stock
+		}
 		productInfos[i] = dto.ProductInfo{
 			ID:           product.ID,
 			Name:         product.Name,
 			Description:  product.Description,
-			Category:     product.CategoryName,
-			SKU:          product.SKU,
-			Unit:         product.Unit,
-			Price:        product.Price,
-			Stock:        product.Stock,
-			ImageURL:     product.ImageURL,
-			ThumbnailURL: product.ThumbnailURL,
+			Category:     categoryName,
+			SKU:          sku,
+			Unit:         unit,
+			Price:        price,
+			Stock:        stock,
+			ImageURLs:    []string(product.ImageURLs),
+			ThumbnailURL: "",
 			IsActive:     product.IsActive,
 			IsFeatured:   product.IsFeatured,
 		}
@@ -240,4 +265,11 @@ func (s *MerchantVendorServiceImpl) GetVendorProductsByCategory(ctx context.Cont
 		Offset:   queryParams.Offset,
 		Total:    totalCount,
 	}, nil
+}
+
+func getPrimaryVariant(product *models.Product) *models.ProductVariant {
+	if product == nil || len(product.Variants) == 0 {
+		return nil
+	}
+	return &product.Variants[0]
 }

@@ -9,6 +9,8 @@ import (
 
 type VendorProductRepository interface {
 	CreateProduct(vendorID uint, product *models.Product) (*models.Product, error)
+	CreateProductVariants(vendorID, productID uint, variants []models.ProductVariant) error
+	SyncProductVariants(vendorID, productID uint, variants []models.ProductVariant) error
 	GetProductByID(vendorID, productID uint) (*models.Product, error)
 	UpdateProduct(vendorID, productID uint, updates map[string]interface{}) (*models.Product, error)
 	DeleteProduct(vendorID, productID uint) error
@@ -35,11 +37,91 @@ func (r *VendorProductRepositoryImpl) CreateProduct(vendorID uint, product *mode
 	return product, nil
 }
 
+func (r *VendorProductRepositoryImpl) CreateProductVariants(vendorID, productID uint, variants []models.ProductVariant) error {
+	var product models.Product
+	if err := r.db.Where("id = ? AND vendor_id = ?", productID, vendorID).First(&product).Error; err != nil {
+		return err
+	}
+
+	for i := range variants {
+		variants[i].ProductID = productID
+	}
+	return r.db.Create(&variants).Error
+}
+
+// SyncProductVariants updates/creates variants and deactivates missing existing variants.
+// Rules:
+// - If variant.ID > 0: update existing variant (must belong to product)
+// - If variant.ID == 0: create new variant
+// - Any existing DB variant not present in request: set is_active=false
+func (r *VendorProductRepositoryImpl) SyncProductVariants(vendorID, productID uint, variants []models.ProductVariant) error {
+	var product models.Product
+	if err := r.db.Where("id = ? AND vendor_id = ?", productID, vendorID).First(&product).Error; err != nil {
+		return err
+	}
+
+	var existing []models.ProductVariant
+	if err := r.db.Where("product_id = ?", productID).Find(&existing).Error; err != nil {
+		return err
+	}
+
+	existingByID := make(map[uint]models.ProductVariant, len(existing))
+	for _, v := range existing {
+		existingByID[v.ID] = v
+	}
+
+	seen := map[uint]bool{}
+
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for _, v := range variants {
+			v.ProductID = productID
+			if v.ID > 0 {
+				if _, ok := existingByID[v.ID]; !ok {
+					return gorm.ErrRecordNotFound
+				}
+				seen[v.ID] = true
+				if err := tx.Model(&models.ProductVariant{}).
+					Where("id = ? AND product_id = ?", v.ID, productID).
+					Updates(map[string]interface{}{
+						"name":      v.Name,
+						"unit":      v.Unit,
+						"quantity":  v.Quantity,
+						"price":     v.Price,
+						"mrp":       v.MRP,
+						"moq":       v.MOQ,
+						"stock":     v.Stock,
+						"is_active": v.IsActive,
+					}).Error; err != nil {
+					return err
+				}
+				continue
+			}
+
+			if err := tx.Create(&v).Error; err != nil {
+				return err
+			}
+		}
+
+		for _, ex := range existing {
+			if !seen[ex.ID] {
+				if err := tx.Model(&models.ProductVariant{}).
+					Where("id = ? AND product_id = ?", ex.ID, productID).
+					Update("is_active", false).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	})
+}
+
 // GetProductByID gets a product by ID for a specific vendor
 func (r *VendorProductRepositoryImpl) GetProductByID(vendorID, productID uint) (*models.Product, error) {
 	var product models.Product
 	err := r.db.Preload("Category").
-		Where("id = ? AND vendor_id = ? AND is_deleted = ?", productID, vendorID, false).
+		Preload("Variants", "is_active = ?", true).
+		Where("id = ? AND vendor_id = ?", productID, vendorID).
 		First(&product).Error
 	if err != nil {
 		return nil, err
@@ -51,22 +133,22 @@ func (r *VendorProductRepositoryImpl) GetProductByID(vendorID, productID uint) (
 func (r *VendorProductRepositoryImpl) UpdateProduct(vendorID, productID uint, updates map[string]interface{}) (*models.Product, error) {
 	// First verify the product belongs to the vendor
 	var product models.Product
-	err := r.db.Where("id = ? AND vendor_id = ? AND is_deleted = ?", productID, vendorID, false).First(&product).Error
+	err := r.db.Where("id = ? AND vendor_id = ?", productID, vendorID).First(&product).Error
 	if err != nil {
 		return nil, err
 	}
 
 	// Update the product
 	err = r.db.Model(&models.Product{}).
-		Where("id = ? AND vendor_id = ? AND is_deleted = ?", productID, vendorID, false).
+		Where("id = ? AND vendor_id = ?", productID, vendorID).
 		Updates(updates).Error
 	if err != nil {
 		return nil, err
 	}
 
 	// Get the updated product with preloaded category
-	err = r.db.Preload("Category").
-		Where("id = ? AND vendor_id = ? AND is_deleted = ?", productID, vendorID, false).
+	err = r.db.Preload("Category").Preload("Variants", "is_active = ?", true).
+		Where("id = ? AND vendor_id = ?", productID, vendorID).
 		First(&product).Error
 	if err != nil {
 		return nil, err
@@ -79,7 +161,7 @@ func (r *VendorProductRepositoryImpl) UpdateProduct(vendorID, productID uint, up
 func (r *VendorProductRepositoryImpl) DeleteProduct(vendorID, productID uint) error {
 	// First verify the product belongs to the vendor
 	var product models.Product
-	err := r.db.Where("id = ? AND vendor_id = ? AND is_deleted = ?", productID, vendorID, false).First(&product).Error
+	err := r.db.Where("id = ? AND vendor_id = ?", productID, vendorID).First(&product).Error
 	if err != nil {
 		return err
 	}
@@ -99,12 +181,19 @@ func (r *VendorProductRepositoryImpl) GetVendorProducts(vendorID uint, queryPara
 	var totalCount int64
 
 	// Build base query
-	query := r.db.Model(&models.Product{}).Preload("Category").
-		Where("vendor_id = ? AND is_deleted = ?", vendorID, false)
+	query := r.db.Model(&models.Product{}).
+		Preload("Category").
+		Preload("Variants", "is_active = ?", true).
+		Where("vendor_id = ?", vendorID)
 
 	// Apply filters
-	if queryParams.CategoryID > 0 {
-		query = query.Where("category_id = ?", queryParams.CategoryID)
+	if queryParams.CategoryName != "" {
+		query = query.Joins("JOIN categories ON categories.id = products.category_id").
+			Where("categories.vendor_id = ? AND categories.is_deleted = ? AND categories.name = ?", vendorID, false, queryParams.CategoryName)
+	}
+
+	if queryParams.ProductID > 0 {
+		query = query.Where("products.id = ?", queryParams.ProductID)
 	}
 
 	if queryParams.IsActive != nil {
@@ -115,8 +204,8 @@ func (r *VendorProductRepositoryImpl) GetVendorProducts(vendorID uint, queryPara
 		query = query.Where("is_featured = ?", *queryParams.IsFeatured)
 	}
 
-	if queryParams.Search != "" {
-		query = query.Where("name LIKE ? OR description LIKE ?", "%"+queryParams.Search+"%", "%"+queryParams.Search+"%")
+	if queryParams.NameOrDescription != "" {
+		query = query.Where("name LIKE ? OR description LIKE ?", "%"+queryParams.NameOrDescription+"%", "%"+queryParams.NameOrDescription+"%")
 	}
 
 	// Count total
@@ -130,7 +219,7 @@ func (r *VendorProductRepositoryImpl) GetVendorProducts(vendorID uint, queryPara
 	case "name":
 		query = query.Order("name ASC")
 	case "price":
-		query = query.Order("price ASC")
+		query = query.Joins("LEFT JOIN product_variants pv ON pv.product_id = products.id AND pv.is_active = ?", true).Order("pv.price ASC")
 	case "created_at":
 		query = query.Order("created_at DESC")
 	case "updated_at":

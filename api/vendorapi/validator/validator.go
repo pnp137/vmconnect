@@ -4,6 +4,7 @@ import (
 	"errors"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"linksupply.io/vmconnect/api/vendorapi/dto"
 )
@@ -15,6 +16,9 @@ type VendorValidator interface {
 	ValidateUpdateProductRequest(req *dto.UpdateProductRequest) error
 	ValidateProductQueryParam(queryParams *dto.ProductQueryParam) error
 	ValidateIDParameter(idStr, paramName string) (uint, error)
+	ValidateAddMerchantRequest(req *dto.AddMerchantRequest) error
+	ValidateUpdateMerchantRequest(req *dto.UpdateMerchantRequest) error
+	ValidateMerchantQueryParam(queryParams *dto.MerchantQueryParam) error
 }
 
 type VendorValidatorImpl struct{}
@@ -97,29 +101,40 @@ func (v *VendorValidatorImpl) ValidateAddProductRequest(req *dto.AddProductReque
 		return errors.New("description cannot exceed 1000 characters")
 	}
 
-	if req.Price < 0 {
-		return errors.New("price must be non-negative")
+	// Category validation: category_name is required
+	if req.CategoryName == "" {
+		return errors.New("category_name is required")
 	}
 
-	// Category validation: either category_id or category_name must be provided
-	if req.CategoryID == 0 && req.CategoryName == "" {
-		return errors.New("either category_id or category_name is required")
-	}
-
-	if req.CategoryName != "" && (len(req.CategoryName) < 1 || len(req.CategoryName) > 100) {
+	if len(req.CategoryName) < 1 || len(req.CategoryName) > 100 {
 		return errors.New("category name must be between 1 and 100 characters")
 	}
 
-	if req.SKU < 1 {
-		return errors.New("SKU must be greater than 0")
+	if len(req.ImageURLs) > 10 {
+		return errors.New("maximum 10 images are allowed")
+	}
+	for _, imageURL := range req.ImageURLs {
+		if len(imageURL) > 500 {
+			return errors.New("each image URL cannot exceed 500 characters")
+		}
+	}
+	if len(req.ThumbnailURL) > 500 {
+		return errors.New("thumbnail URL cannot exceed 500 characters")
 	}
 
-	if len(req.ImageURL) > 500 {
-		return errors.New("image URL cannot exceed 500 characters")
+	if len(req.Variants) == 0 {
+		return errors.New("at least one variant is required")
 	}
-
-	if req.Stock < 0 {
-		return errors.New("stock must be non-negative")
+	for _, variant := range req.Variants {
+		if strings.TrimSpace(variant.Name) == "" {
+			return errors.New("variant name is required")
+		}
+		if variant.Price < 0 {
+			return errors.New("variant price must be non-negative")
+		}
+		if variant.Stock < 0 {
+			return errors.New("variant stock must be non-negative")
+		}
 	}
 
 	return nil
@@ -139,27 +154,31 @@ func (v *VendorValidatorImpl) ValidateUpdateProductRequest(req *dto.UpdateProduc
 		}
 	}
 
-	if req.Price != nil {
-		if *req.Price < 0 {
-			return errors.New("price must be non-negative")
+	if req.ImageURLs != nil {
+		if len(*req.ImageURLs) > 10 {
+			return errors.New("maximum 10 images are allowed")
+		}
+		for _, imageURL := range *req.ImageURLs {
+			if len(imageURL) > 500 {
+				return errors.New("each image URL cannot exceed 500 characters")
+			}
 		}
 	}
-
-	if req.SKU != nil {
-		if len(*req.SKU) > 50 {
-			return errors.New("SKU cannot exceed 50 characters")
-		}
+	if req.ThumbnailURL != nil && len(*req.ThumbnailURL) > 500 {
+		return errors.New("thumbnail URL cannot exceed 500 characters")
 	}
 
-	if req.ImageURL != nil {
-		if len(*req.ImageURL) > 500 {
-			return errors.New("image URL cannot exceed 500 characters")
-		}
-	}
-
-	if req.Stock != nil {
-		if *req.Stock < 0 {
-			return errors.New("stock must be non-negative")
+	if req.Variants != nil {
+		for _, variant := range *req.Variants {
+			if strings.TrimSpace(variant.Name) == "" {
+				return errors.New("variant name is required")
+			}
+			if variant.Price < 0 {
+				return errors.New("variant price must be non-negative")
+			}
+			if variant.Stock < 0 {
+				return errors.New("variant stock must be non-negative")
+			}
 		}
 	}
 
@@ -176,6 +195,10 @@ func (v *VendorValidatorImpl) ValidateProductQueryParam(queryParams *dto.Product
 		return errors.New("offset must be non-negative")
 	}
 
+	if queryParams.ProductID > 0 && queryParams.CategoryName != "" {
+		return errors.New("product_id and category_name cannot be used together")
+	}
+
 	if queryParams.Ordering != "" {
 		validOrderings := []string{"name", "price", "created_at", "updated_at"}
 		isValid := false
@@ -190,8 +213,11 @@ func (v *VendorValidatorImpl) ValidateProductQueryParam(queryParams *dto.Product
 		}
 	}
 
-	if len(queryParams.Search) > 100 {
+	if len(queryParams.NameOrDescription) > 100 {
 		return errors.New("search term cannot exceed 100 characters")
+	}
+	if len(queryParams.CategoryName) > 100 {
+		return errors.New("category_name cannot exceed 100 characters")
 	}
 
 	return nil
@@ -220,4 +246,171 @@ func (v *VendorValidatorImpl) ValidateIDParameter(idStr, paramName string) (uint
 	}
 
 	return uint(id), nil
+}
+
+// ValidateAddMerchantRequest validates a vendor-created merchant request.
+func (v *VendorValidatorImpl) ValidateAddMerchantRequest(req *dto.AddMerchantRequest) error {
+	if req.Name == "" {
+		return errors.New("name is required")
+	}
+	if len(req.Name) < 2 || len(req.Name) > 100 {
+		return errors.New("name must be between 2 and 100 characters")
+	}
+
+	if err := validateEmail(req.Email); err != nil {
+		return err
+	}
+
+	if err := validatePhone(req.Phone); err != nil {
+		return err
+	}
+
+	if req.Password == "" {
+		return errors.New("password is required")
+	}
+	if len(req.Password) < 6 {
+		return errors.New("password must be at least 6 characters long")
+	}
+
+	if req.BusinessName == "" {
+		return errors.New("business name is required")
+	}
+	if len(req.BusinessName) < 2 || len(req.BusinessName) > 100 {
+		return errors.New("business name must be between 2 and 100 characters")
+	}
+
+	if req.ShopName == "" {
+		return errors.New("shop name is required")
+	}
+	if len(req.ShopName) < 2 || len(req.ShopName) > 100 {
+		return errors.New("shop name must be between 2 and 100 characters")
+	}
+
+	if req.Address == "" {
+		return errors.New("address is required")
+	}
+
+	if err := validatePincode(req.Pincode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ValidateUpdateMerchantRequest validates merchant updates made by a vendor.
+func (v *VendorValidatorImpl) ValidateUpdateMerchantRequest(req *dto.UpdateMerchantRequest) error {
+	if req.Name != nil && (len(*req.Name) < 2 || len(*req.Name) > 100) {
+		return errors.New("name must be between 2 and 100 characters")
+	}
+
+	if req.Email != nil {
+		if err := validateEmail(*req.Email); err != nil {
+			return err
+		}
+	}
+
+	if req.Phone != nil {
+		if err := validatePhone(*req.Phone); err != nil {
+			return err
+		}
+	}
+
+	if req.Password != nil && len(*req.Password) < 6 {
+		return errors.New("password must be at least 6 characters long")
+	}
+
+	if req.BusinessName != nil && (len(*req.BusinessName) < 2 || len(*req.BusinessName) > 100) {
+		return errors.New("business name must be between 2 and 100 characters")
+	}
+
+	if req.ShopName != nil && (len(*req.ShopName) < 2 || len(*req.ShopName) > 100) {
+		return errors.New("shop name must be between 2 and 100 characters")
+	}
+
+	if req.Address != nil && *req.Address == "" {
+		return errors.New("address cannot be empty")
+	}
+
+	if req.Pincode != nil {
+		if err := validatePincode(*req.Pincode); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validateEmail(email string) error {
+	if email == "" {
+		return errors.New("email is required")
+	}
+
+	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	if matched, _ := regexp.MatchString(emailRegex, email); !matched {
+		return errors.New("invalid email format")
+	}
+
+	return nil
+}
+
+func validatePhone(phone string) error {
+	if phone == "" {
+		return errors.New("phone is required")
+	}
+	if len(phone) < 10 || len(phone) > 15 {
+		return errors.New("phone must be between 10 and 15 characters")
+	}
+
+	return nil
+}
+
+// ValidateMerchantQueryParam validates the merchant query parameters
+func (v *VendorValidatorImpl) ValidateMerchantQueryParam(queryParams *dto.MerchantQueryParam) error {
+	if queryParams.Limit < 1 || queryParams.Limit > 100 {
+		return errors.New("limit must be between 1 and 100")
+	}
+
+	if queryParams.Offset < 0 {
+		return errors.New("offset must be non-negative")
+	}
+
+	if queryParams.Ordering != "" {
+		validOrderings := []string{"owner_name", "business_name", "shop_name", "created_at"}
+		isValid := false
+		for _, validOrdering := range validOrderings {
+			if queryParams.Ordering == validOrdering {
+				isValid = true
+				break
+			}
+		}
+		if !isValid {
+			return errors.New("ordering must be one of: owner_name, business_name, shop_name, created_at")
+		}
+	}
+
+	if len(queryParams.BusinessName) > 100 {
+		return errors.New("business_name cannot exceed 100 characters")
+	}
+	if len(queryParams.ShopName) > 100 {
+		return errors.New("shop_name cannot exceed 100 characters")
+	}
+	if len(queryParams.Pincode) > 10 {
+		return errors.New("pincode cannot exceed 10 characters")
+	}
+	if len(queryParams.OwnerName) > 100 {
+		return errors.New("owner_name cannot exceed 100 characters")
+	}
+
+	return nil
+}
+
+func validatePincode(pincode string) error {
+	if pincode == "" {
+		return errors.New("pincode is required")
+	}
+	if len(pincode) != 6 {
+		return errors.New("pincode must be exactly 6 characters")
+	}
+
+	return nil
 }

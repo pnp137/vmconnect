@@ -63,14 +63,17 @@ type UserInfo struct {
 // MerchantUserInfo represents merchant-specific user info
 type MerchantUserInfo struct {
 	UserInfo
-	ShopName string `json:"shop_name"`
-	Address  string `json:"address"`
-	Pincode  string `json:"pincode"`
+	MerchantID   uint   `json:"merchant_id"`
+	BusinessName string `json:"business_name"`
+	ShopName     string `json:"shop_name"`
+	Address      string `json:"address"`
+	Pincode      string `json:"pincode"`
 }
 
 // VendorUserInfo represents vendor-specific user info
 type VendorUserInfo struct {
 	UserInfo
+	VendorID    uint   `json:"vendor_id"`
 	CompanyName string `json:"company_name"`
 	GSTNumber   string `json:"gst_number"`
 	Address     string `json:"address"`

@@ -121,10 +121,12 @@ func (r *MerchantRepositoryImpl) GetVendorProductsForMerchant(merchantID, vendor
 	var products []models.Product
 
 	// First, try to get products with custom visibility
-	err := r.db.Table("products").
+	err := r.db.Model(&models.Product{}).
+		Preload("Category").
+		Preload("Variants", "is_active = ?", true).
 		Joins("JOIN merchant_product_visibilities ON products.id = merchant_product_visibilities.product_id").
-		Where("merchant_product_visibilities.merchant_id = ? AND merchant_product_visibilities.vendor_id = ? AND merchant_product_visibilities.is_deleted = ? AND products.is_deleted = ?",
-			merchantID, vendorID, false, false).
+		Where("merchant_product_visibilities.merchant_id = ? AND merchant_product_visibilities.vendor_id = ? AND merchant_product_visibilities.is_deleted = ?",
+			merchantID, vendorID, false).
 		Find(&products).Error
 
 	if err != nil {
@@ -133,7 +135,10 @@ func (r *MerchantRepositoryImpl) GetVendorProductsForMerchant(merchantID, vendor
 
 	// If no products found with custom visibility, get all vendor products
 	if len(products) == 0 {
-		err = r.db.Where("vendor_id = ? AND is_deleted = ?", vendorID, false).Find(&products).Error
+		err = r.db.Model(&models.Product{}).
+			Preload("Category").
+			Preload("Variants", "is_active = ?", true).
+			Where("vendor_id = ?", vendorID).Find(&products).Error
 		if err != nil {
 			return nil, err
 		}
@@ -145,7 +150,7 @@ func (r *MerchantRepositoryImpl) GetVendorProductsForMerchant(merchantID, vendor
 // GetMerchantByID gets merchant by ID with user info preloaded
 func (r *MerchantRepositoryImpl) GetMerchantByID(merchantID uint) (*models.Merchant, error) {
 	var merchant models.Merchant
-	err := r.db.Model(&models.Merchant{}).Preload("User").Where("id = ? AND is_deleted = ?", merchantID, false).First(&merchant).Error
+	err := r.db.Model(&models.Merchant{}).Preload("Owner").Where("id = ? AND is_deleted = ?", merchantID, false).First(&merchant).Error
 	if err != nil {
 		return nil, err
 	}
@@ -196,10 +201,12 @@ func (r *MerchantRepositoryImpl) GetVendorProductsByCategoryForMerchant(merchant
 	var totalCount int64
 
 	// Build base query
-	query := r.db.Table("products").
+	query := r.db.Model(&models.Product{}).
+		Preload("Category").
+		Preload("Variants", "is_active = ?", true).
 		Joins("JOIN categories ON products.category_id = categories.id").
-		Where("categories.id = ? AND categories.vendor_id = ? AND categories.is_deleted = ? AND products.is_deleted = ?",
-			queryParams.CategoryID, vendorID, false, false)
+		Where("categories.id = ? AND categories.vendor_id = ? AND categories.is_deleted = ?",
+			queryParams.CategoryID, vendorID, false)
 
 	// Apply state filter
 	if queryParams.State == "active" {
@@ -232,7 +239,7 @@ func (r *MerchantRepositoryImpl) GetVendorProductsByCategoryForMerchant(merchant
 		case "name":
 			query = query.Order("products.name ASC")
 		case "price":
-			query = query.Order("products.price ASC")
+			query = query.Joins("LEFT JOIN product_variants pv ON pv.product_id = products.id AND pv.is_active = ?", true).Order("pv.price ASC")
 		case "created_at":
 			query = query.Order("products.created_at DESC")
 		default:
@@ -247,7 +254,7 @@ func (r *MerchantRepositoryImpl) GetVendorProductsByCategoryForMerchant(merchant
 		case "name":
 			customQuery = customQuery.Order("products.name ASC")
 		case "price":
-			customQuery = customQuery.Order("products.price ASC")
+			customQuery = customQuery.Joins("LEFT JOIN product_variants pv ON pv.product_id = products.id AND pv.is_active = ?", true).Order("pv.price ASC")
 		case "created_at":
 			customQuery = customQuery.Order("products.created_at DESC")
 		default:
@@ -463,7 +470,7 @@ func (r *MerchantRepositoryImpl) GetMerchantOrders(merchantID uint, queryParams 
 // GetProductByID gets product by ID
 func (r *MerchantRepositoryImpl) GetProductByID(productID uint) (*models.Product, error) {
 	var product models.Product
-	err := r.db.Where("id = ? AND is_deleted = ?", productID, false).First(&product).Error
+	err := r.db.Preload("Variants", "is_active = ?", true).Where("id = ?", productID).First(&product).Error
 	if err != nil {
 		return nil, err
 	}

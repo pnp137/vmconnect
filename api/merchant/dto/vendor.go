@@ -29,19 +29,19 @@ type GetVendorsResponse struct {
 
 // ProductInfo represents product information
 type ProductInfo struct {
-	ID           uint    `json:"id"`
-	Name         string  `json:"name"`
-	Description  string  `json:"description"`
-	Category     string  `json:"category"`
-	SKU          int     `json:"sku"`
-	Unit         string  `json:"unit"`
-	Price        float64 `json:"price"`
-	Stock        int     `json:"stock"`
-	ImageURL     string  `json:"image_url"`
-	ThumbnailURL string  `json:"thumbnail_url"`
-	IsActive     bool    `json:"is_active"`
-	IsFeatured   bool    `json:"is_featured"`
-	IsWishlisted bool    `json:"is_wishlisted,omitempty"`
+	ID           uint     `json:"id"`
+	Name         string   `json:"name"`
+	Description  string   `json:"description"`
+	Category     string   `json:"category"`
+	SKU          int      `json:"sku"`
+	Unit         string   `json:"unit"`
+	Price        float64  `json:"price"`
+	Stock        int      `json:"stock"`
+	ImageURLs    []string `json:"image_urls"`
+	ThumbnailURL string   `json:"thumbnail_url"`
+	IsActive     bool     `json:"is_active"`
+	IsFeatured   bool     `json:"is_featured"`
+	IsWishlisted bool     `json:"is_wishlisted,omitempty"`
 }
 
 // GetProductsResponse represents the response for getting vendor products

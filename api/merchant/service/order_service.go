@@ -199,7 +199,7 @@ func (s *OrderServiceImpl) ManageCartItem(ctx context.Context, merchantID, vendo
 		message = "Product quantity updated in cart"
 	} else {
 		// Add new item
-		_, err = s.repository.AddToCart(cartOrder.ID, req.ProductID, req.Quantity, product.Price)
+		_, err = s.repository.AddToCart(cartOrder.ID, req.ProductID, req.Quantity, getProductPrice(product))
 		if err != nil {
 			return nil, &response.ErrorDetails{
 				Code:    http.StatusInternalServerError,
@@ -226,7 +226,7 @@ func (s *OrderServiceImpl) ManageCartItem(ctx context.Context, merchantID, vendo
 	// Create order activity
 	activity := &models.OrderActivity{
 		OrderID:    cartOrder.ID,
-		ActorID:    merchant.UserID, // Store user_id from merchant
+		ActorID:    merchant.OwnerID, // Store user_id from merchant
 		ActorRole:  &actorRole,
 		OrderState: &orderStatus,
 		Remarks:    message,
@@ -311,7 +311,7 @@ func (s *OrderServiceImpl) UpdateOrderStatus(ctx context.Context, merchantID, or
 	actorRole := models.ACTOR_MERCHANT
 	activity := &models.OrderActivity{
 		OrderID:    orderID,
-		ActorID:    merchant.UserID, // Store user_id from merchant
+		ActorID:    merchant.OwnerID, // Store user_id from merchant
 		ActorRole:  &actorRole,
 		OrderState: &newStatus,
 		Remarks:    remarks,
@@ -550,7 +550,7 @@ func (s *OrderServiceImpl) PlaceOrder(ctx context.Context, merchantID, orderID u
 	actorRole := models.ACTOR_MERCHANT
 	activity := &models.OrderActivity{
 		OrderID:    orderID,
-		ActorID:    merchant.UserID,
+		ActorID:    merchant.OwnerID,
 		ActorRole:  &actorRole,
 		OrderState: &targetStatus,
 		Remarks:    req.Notes,
@@ -666,7 +666,7 @@ func (s *OrderServiceImpl) MarkReceived(ctx context.Context, merchantID, orderID
 	actorRole := models.ACTOR_MERCHANT
 	activity := &models.OrderActivity{
 		OrderID:    orderID,
-		ActorID:    merchant.UserID,
+		ActorID:    merchant.OwnerID,
 		ActorRole:  &actorRole,
 		OrderState: &targetStatus,
 		Remarks:    req.Notes,
@@ -777,7 +777,7 @@ func (s *OrderServiceImpl) CompleteOrder(ctx context.Context, merchantID, orderI
 
 	activity := &models.OrderActivity{
 		OrderID:    orderID,
-		ActorID:    merchant.UserID,
+		ActorID:    merchant.OwnerID,
 		ActorRole:  &actorRole,
 		OrderState: &targetStatus,
 		Remarks:    req.Notes,
@@ -875,7 +875,7 @@ func (s *OrderServiceImpl) CancelOrder(ctx context.Context, merchantID, orderID 
 	actorRole := models.ACTOR_MERCHANT
 	activity := &models.OrderActivity{
 		OrderID:    orderID,
-		ActorID:    merchant.UserID,
+		ActorID:    merchant.OwnerID,
 		ActorRole:  &actorRole,
 		OrderState: &targetStatus,
 		Remarks:    req.Notes,
@@ -900,4 +900,11 @@ func (s *OrderServiceImpl) CancelOrder(ctx context.Context, merchantID, orderID 
 		Message:   "Order cancelled successfully",
 		Timestamp: time.Now().Format(time.RFC3339),
 	}, nil
+}
+
+func getProductPrice(product *models.Product) float64 {
+	if product == nil || len(product.Variants) == 0 {
+		return 0
+	}
+	return product.Variants[0].Price
 }

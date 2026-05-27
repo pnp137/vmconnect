@@ -63,7 +63,7 @@ func (s *PaymentServiceImpl) SubmitPayment(
 
 	payment := &models.Payment{
 		OrderID:         orderID,
-		SubmittedBy:     merchant.UserID,
+		SubmittedBy:     merchant.OwnerID,
 		ActorRole:       &actorRole,
 		Amount:          req.Amount,
 		PaymentMode:     &paymentMode,
@@ -100,7 +100,7 @@ func (s *PaymentServiceImpl) SubmitPayment(
 		paymentPending := models.ORDER_PAYMENT_PENDING
 		updatedOrder.Status = &paymentPending
 		updatedOrder.StatusUpdatedAt = now
-		updatedOrder.StatusUpdatedBy = merchant.UserID
+		updatedOrder.StatusUpdatedBy = merchant.OwnerID
 		err = s.repo.UpdateOrderStatus(orderID, paymentPending)
 		if err != nil {
 			return nil, fmt.Errorf("failed to update order status: %w", err)
@@ -110,7 +110,7 @@ func (s *PaymentServiceImpl) SubmitPayment(
 	// 8. Create order activity log
 	activity := &models.OrderActivity{
 		OrderID:    orderID,
-		ActorID:    merchant.UserID,
+		ActorID:    merchant.OwnerID,
 		ActorRole:  &actorRole,
 		OrderState: updatedOrder.Status,
 		Remarks:    fmt.Sprintf("Payment of ₹%.2f submitted via %s", req.Amount, paymentMode.String()),

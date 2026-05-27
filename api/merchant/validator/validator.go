@@ -61,6 +61,13 @@ func (v *MerchantValidatorImpl) ValidateRegisterRequest(req *dto.MerchantRegiste
 		return errors.New("password must be at least 6 characters long")
 	}
 
+	if req.BusinessName == "" {
+		return errors.New("business name is required")
+	}
+	if len(req.BusinessName) < 2 || len(req.BusinessName) > 100 {
+		return errors.New("business name must be between 2 and 100 characters")
+	}
+
 	if req.ShopName == "" {
 		return errors.New("shop name is required")
 	}

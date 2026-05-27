@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"net/http"
-	"strconv"
+	"strings"
 
 	"linksupply.io/vmconnect/api/response"
 	"linksupply.io/vmconnect/api/vendorapi/dto"
@@ -44,36 +44,24 @@ func (s *VendorProductServiceImpl) AddProduct(ctx context.Context, vendorID uint
 		}
 	}
 
-	// Get or create category
-	var categoryID uint
-	if req.CategoryID > 0 {
-		// Use provided category ID
-		categoryID = req.CategoryID
-	} else {
-		// Get or create category by name
-		category, err := s.repository.GetOrCreateCategory(vendorID, req.CategoryName)
-		if err != nil {
-			return nil, &response.ErrorDetails{
-				Code:    http.StatusInternalServerError,
-				Message: "Failed to get or create category",
-				Error:   err,
-			}
+	category, err := s.repository.GetOrCreateCategory(vendorID, req.CategoryName)
+	if err != nil {
+		return nil, &response.ErrorDetails{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to get or create category",
+			Error:   err,
 		}
-		categoryID = category.ID
 	}
 
 	// Create product model
 	product := &models.Product{
 		Name:         req.Name,
 		Description:  req.Description,
-		Price:        req.Price,
-		CategoryID:   categoryID,
-		CategoryName: req.CategoryName, // Store category name as well
-		SKU:          req.SKU,
+		CategoryID:   category.ID,
 		IsActive:     req.IsActive,
 		IsFeatured:   req.IsFeatured,
-		ImageURL:     req.ImageURL,
-		Stock:        req.Stock,
+		ImageURLs:    cleanProductImages(req.ImageURLs),
+		ThumbnailURL: req.ThumbnailURL,
 	}
 
 	// Create product in repository
@@ -82,6 +70,39 @@ func (s *VendorProductServiceImpl) AddProduct(ctx context.Context, vendorID uint
 		return nil, &response.ErrorDetails{
 			Code:    http.StatusInternalServerError,
 			Message: "Failed to create product",
+			Error:   err,
+		}
+	}
+
+	var variants []models.ProductVariant
+	for _, v := range req.Variants {
+		active := true
+		if v.IsActive != nil {
+			active = *v.IsActive
+		}
+		variants = append(variants, models.ProductVariant{
+			Name:     v.Name,
+			Unit:     v.Unit,
+			Quantity: v.Quantity,
+			Price:    v.Price,
+			MRP:      v.MRP,
+			MOQ:      v.MOQ,
+			Stock:    v.Stock,
+			IsActive: active,
+		})
+	}
+	if err := s.repository.CreateProductVariants(vendorID, createdProduct.ID, variants); err != nil {
+		return nil, &response.ErrorDetails{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to create product variants",
+			Error:   err,
+		}
+	}
+	createdProduct, err = s.repository.GetProductByID(vendorID, createdProduct.ID)
+	if err != nil {
+		return nil, &response.ErrorDetails{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to load created product",
 			Error:   err,
 		}
 	}
@@ -114,14 +135,16 @@ func (s *VendorProductServiceImpl) UpdateProduct(ctx context.Context, vendorID, 
 	if req.Description != nil {
 		updates["description"] = *req.Description
 	}
-	if req.Price != nil {
-		updates["price"] = *req.Price
-	}
-	if req.CategoryID != nil {
-		updates["category_id"] = *req.CategoryID
-	}
-	if req.SKU != nil {
-		updates["sku"] = *req.SKU
+	if req.CategoryName != nil {
+		category, err := s.repository.GetOrCreateCategory(vendorID, *req.CategoryName)
+		if err != nil {
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusInternalServerError,
+				Message: "Failed to get or create category",
+				Error:   err,
+			}
+		}
+		updates["category_id"] = category.ID
 	}
 	if req.IsActive != nil {
 		updates["is_active"] = *req.IsActive
@@ -129,11 +152,11 @@ func (s *VendorProductServiceImpl) UpdateProduct(ctx context.Context, vendorID, 
 	if req.IsFeatured != nil {
 		updates["is_featured"] = *req.IsFeatured
 	}
-	if req.ImageURL != nil {
-		updates["image_url"] = *req.ImageURL
+	if req.ImageURLs != nil {
+		updates["image_urls"] = cleanProductImages(*req.ImageURLs)
 	}
-	if req.Stock != nil {
-		updates["stock"] = *req.Stock
+	if req.ThumbnailURL != nil {
+		updates["thumbnail_url"] = *req.ThumbnailURL
 	}
 
 	// Update product in repository
@@ -143,6 +166,48 @@ func (s *VendorProductServiceImpl) UpdateProduct(ctx context.Context, vendorID, 
 			Code:    http.StatusInternalServerError,
 			Message: "Failed to update product",
 			Error:   err,
+		}
+	}
+
+	if req.Variants != nil {
+		var variants []models.ProductVariant
+		for _, v := range *req.Variants {
+			active := true
+			if v.IsActive != nil {
+				active = *v.IsActive
+			}
+			var id uint
+			if v.ID != nil {
+				id = *v.ID
+			}
+			variants = append(variants, models.ProductVariant{
+				ID:        id,
+				ProductID: productID,
+				Name:      v.Name,
+				Unit:      v.Unit,
+				Quantity:  v.Quantity,
+				Price:     v.Price,
+				MRP:       v.MRP,
+				MOQ:       v.MOQ,
+				Stock:     v.Stock,
+				IsActive:  active,
+			})
+		}
+
+		if err := s.repository.SyncProductVariants(vendorID, productID, variants); err != nil {
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusInternalServerError,
+				Message: "Failed to sync product variants",
+				Error:   err,
+			}
+		}
+		updatedProduct, err = s.repository.GetProductByID(vendorID, productID)
+		if err != nil {
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusInternalServerError,
+				Message: "Failed to load updated product",
+				Error:   err,
+			}
 		}
 	}
 
@@ -269,20 +334,47 @@ func (s *VendorProductServiceImpl) convertToProductResponse(product *models.Prod
 	if product.CategoryID > 0 && product.Category.ID > 0 {
 		categoryName = product.Category.Name
 	}
+	var variantResponses []dto.ProductVariantResponse
+	for _, v := range product.Variants {
+		variantResponses = append(variantResponses, dto.ProductVariantResponse{
+			ID:        v.ID,
+			Name:      v.Name,
+			Unit:      v.Unit,
+			Quantity:  v.Quantity,
+			Price:     v.Price,
+			MRP:       v.MRP,
+			MOQ:       v.MOQ,
+			Stock:     v.Stock,
+			IsActive:  v.IsActive,
+			CreatedAt: v.CreatedAt,
+			UpdatedAt: v.UpdatedAt,
+		})
+	}
 
 	return dto.ProductResponse{
 		ID:           product.ID,
 		Name:         product.Name,
 		Description:  product.Description,
-		Price:        product.Price,
+		VendorID:     product.VendorID,
 		CategoryID:   product.CategoryID,
 		CategoryName: categoryName,
-		SKU:          strconv.Itoa(product.SKU), // Convert int to string for response
 		IsActive:     product.IsActive,
 		IsFeatured:   product.IsFeatured,
-		ImageURL:     product.ImageURL,
-		Stock:        product.Stock,
+		ImageURLs:    []string(product.ImageURLs),
+		ThumbnailURL: product.ThumbnailURL,
+		Variants:     variantResponses,
 		CreatedAt:    product.CreatedAt,
 		UpdatedAt:    product.UpdatedAt,
 	}
+}
+
+func cleanProductImages(imageURLs []string) models.StringArray {
+	clean := make(models.StringArray, 0, len(imageURLs))
+	for _, image := range imageURLs {
+		trimmed := strings.TrimSpace(image)
+		if trimmed != "" {
+			clean = append(clean, trimmed)
+		}
+	}
+	return clean
 }
