@@ -291,7 +291,7 @@ func (r *MerchantRepositoryImpl) GetOrCreateCartOrder(merchantID, vendorID uint)
 	orderStatus := models.ORDER_IN_CART
 	// Create new cart order
 	order = models.Order{
-		MerchantID:  merchantID,
+		MerchantID:  &merchantID,
 		VendorID:    vendorID,
 		Status:      &orderStatus,
 		TotalAmount: 0,
@@ -315,8 +315,8 @@ func (r *MerchantRepositoryImpl) AddToCart(orderID, productID uint, quantity int
 
 	if err == nil {
 		// Update existing item
-		orderItem.Quantity += quantity
-		orderItem.SubTotal = float64(orderItem.Quantity) * orderItem.Price
+		orderItem.Quantity += float64(quantity)
+		orderItem.SubTotal = orderItem.Quantity * orderItem.Price
 
 		err = r.db.Save(&orderItem).Error
 		if err != nil {
@@ -340,7 +340,7 @@ func (r *MerchantRepositoryImpl) AddToCart(orderID, productID uint, quantity int
 	orderItem = models.OrderItem{
 		OrderID:   orderID,
 		ProductID: productID,
-		Quantity:  quantity,
+		Quantity:  float64(quantity),
 		Price:     price,
 		SubTotal:  float64(quantity) * price,
 	}
@@ -390,8 +390,8 @@ func (r *MerchantRepositoryImpl) UpdateCartItemQuantity(orderItemID uint, quanti
 		return nil, err
 	}
 
-	orderItem.Quantity = quantity
-	orderItem.SubTotal = float64(quantity) * orderItem.Price
+	orderItem.Quantity = float64(quantity)
+	orderItem.SubTotal = orderItem.Quantity * orderItem.Price
 
 	err = r.db.Save(&orderItem).Error
 	if err != nil {

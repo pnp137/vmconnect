@@ -6,12 +6,24 @@ import "time"
 type Order struct {
 	ID         uint   `gorm:"primaryKey" json:"id"`
 	OrderNo    string `gorm:"uniqueIndex;size:100" json:"order_no"` // Unique order number
-	MerchantID uint   `gorm:"not null;index" json:"merchant_id"`
+	MerchantID *uint  `gorm:"index" json:"merchant_id,omitempty"`
 	VendorID   uint   `gorm:"not null;index" json:"vendor_id"`
+
+	OrderFor       string   `gorm:"size:20;index" json:"order_for,omitempty"`
+	CustomerName   string   `gorm:"size:255" json:"customer_name,omitempty"`
+	CustomerMobile string   `gorm:"size:20" json:"customer_mobile,omitempty"`
+	Latitude       *float64 `json:"latitude,omitempty"`
+	Longitude      *float64 `json:"longitude,omitempty"`
+	GoogleMapsURL  string   `gorm:"size:500" json:"google_maps_url,omitempty"`
+
+	MerchantName    string `gorm:"size:255" json:"merchant_name,omitempty"`
+	MerchantMobile  string `gorm:"size:20" json:"merchant_mobile,omitempty"`
+	ShopName        string `gorm:"size:255" json:"shop_name,omitempty"`
+	DeliveryAddress string `gorm:"type:text" json:"delivery_address,omitempty"`
 
 	// Order State
 	Status          *OrderStatus `gorm:"type:int;not null;index" json:"status"`
-	StatusUpdatedAt time.Time    `json:"status_updated_at"`
+	StatusUpdatedAt *time.Time   `json:"status_updated_at,omitempty"`
 	StatusUpdatedBy uint         `json:"status_updated_by"` // User ID who last updated status
 
 	// Financial Tracking
@@ -43,7 +55,6 @@ type Order struct {
 	// Timestamps
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	IsDeleted bool      `gorm:"default:false;index" json:"is_deleted"`
 
 	// Relationships
 	Vendor        Vendor          `gorm:"foreignKey:VendorID" json:"vendor,omitempty"`

@@ -8,14 +8,14 @@ import (
 
 type OrderActivity struct {
 	ID         uint         `gorm:"primaryKey" json:"id"`
-	OrderID    uint         `gorm:"not null" json:"orderId"`
+	OrderID    uint         `gorm:"not null;index:idx_order_activity_state_history,priority:1" json:"orderId"`
 	ActorID    uint         `gorm:"not null;comment:'User ID from users table'" json:"actorId"`
-	ActorRole  *ActorRole   `gorm:"type:int;not null" json:"actorRole"` // merchant, vendor, system
-	OrderState *OrderStatus `json:"order_state"`                        // Order status enum
+	ActorRole  *ActorRole   `gorm:"type:int;not null" json:"actorRole"`                                   // merchant, vendor, system
+	OrderState *OrderStatus `gorm:"index:idx_order_activity_state_history,priority:2" json:"order_state"` // Order status enum
 	Remarks    string       `gorm:"type:text" json:"remarks,omitempty"`
 	Metadata   JSONMap      `gorm:"type:json" json:"metadata,omitempty"`
-	CreatedAt  time.Time    `json:"createdAt"`
-	IsDeleted  bool         `gorm:"default:false" json:"isDeleted"`
+	CreatedAt  time.Time    `gorm:"index:idx_order_activity_state_history,priority:4" json:"createdAt"`
+	IsDeleted  bool         `gorm:"default:false;index:idx_order_activity_state_history,priority:3" json:"isDeleted"`
 	UpdatedAt  time.Time    `json:"updatedAt"`
 
 	// Relationships

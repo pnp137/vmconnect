@@ -187,7 +187,9 @@ func (r *VendorProductRepositoryImpl) GetVendorProducts(vendorID uint, queryPara
 		Where("vendor_id = ?", vendorID)
 
 	// Apply filters
-	if queryParams.CategoryName != "" {
+	if queryParams.CategoryID > 0 {
+		query = query.Where("products.category_id = ?", queryParams.CategoryID)
+	} else if queryParams.CategoryName != "" {
 		query = query.Joins("JOIN categories ON categories.id = products.category_id").
 			Where("categories.vendor_id = ? AND categories.is_deleted = ? AND categories.name = ?", vendorID, false, queryParams.CategoryName)
 	}

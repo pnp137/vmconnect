@@ -192,7 +192,6 @@ func (h *VendorMerchantHandler) GetProductVisibility(c *fiber.Ctx) error {
 	log := logger.NewLogger()
 	logPrefix := "[VendorMerchantHandler.GetProductVisibility] "
 
-	// Get vendor ID from URL parameter
 	vendorIDStr := c.Params("vid")
 	vendorID, err := h.validator.ValidateIDParameter(vendorIDStr, "vendor ID")
 	if err != nil {
@@ -201,7 +200,6 @@ func (h *VendorMerchantHandler) GetProductVisibility(c *fiber.Ctx) error {
 		return response.WriteHTTPResponse(c, 400, errorBody)
 	}
 
-	// Get merchant ID from URL parameter
 	merchantIDStr := c.Params("mid")
 	merchantID, err := h.validator.ValidateIDParameter(merchantIDStr, "merchant ID")
 	if err != nil {
@@ -212,7 +210,6 @@ func (h *VendorMerchantHandler) GetProductVisibility(c *fiber.Ctx) error {
 
 	log.Debug(logPrefix + "Getting product visibility for vendor ID: " + vendorIDStr + ", merchant ID: " + merchantIDStr)
 
-	// Call service
 	visibilityResponse, errDetails := h.merchantService.GetProductVisibility(c.UserContext(), vendorID, merchantID)
 	if errDetails != nil {
 		log.Error(errDetails.Error, logPrefix+"Error getting product visibility: "+errDetails.Message)
@@ -222,7 +219,6 @@ func (h *VendorMerchantHandler) GetProductVisibility(c *fiber.Ctx) error {
 
 	log.Info(logPrefix + "Successfully retrieved product visibility for vendor ID: " + vendorIDStr + ", merchant ID: " + merchantIDStr)
 
-	// Return success response
 	body := &response.HTTPResponse{
 		Content: visibilityResponse,
 	}
@@ -234,7 +230,6 @@ func (h *VendorMerchantHandler) UpdateProductVisibility(c *fiber.Ctx) error {
 	log := logger.NewLogger()
 	logPrefix := "[VendorMerchantHandler.UpdateProductVisibility] "
 
-	// Get vendor ID from URL parameter
 	vendorIDStr := c.Params("vid")
 	vendorID, err := h.validator.ValidateIDParameter(vendorIDStr, "vendor ID")
 	if err != nil {
@@ -243,7 +238,6 @@ func (h *VendorMerchantHandler) UpdateProductVisibility(c *fiber.Ctx) error {
 		return response.WriteHTTPResponse(c, 400, errorBody)
 	}
 
-	// Get merchant ID from URL parameter
 	merchantIDStr := c.Params("mid")
 	merchantID, err := h.validator.ValidateIDParameter(merchantIDStr, "merchant ID")
 	if err != nil {
@@ -252,7 +246,6 @@ func (h *VendorMerchantHandler) UpdateProductVisibility(c *fiber.Ctx) error {
 		return response.WriteHTTPResponse(c, 400, errorBody)
 	}
 
-	// Parse request body
 	var req []dto.UpdateProductVisibilityRequest
 	if err := c.BodyParser(&req); err != nil {
 		log.Debug(logPrefix + "Invalid request body: " + err.Error())
@@ -262,7 +255,6 @@ func (h *VendorMerchantHandler) UpdateProductVisibility(c *fiber.Ctx) error {
 
 	log.Debug(logPrefix + "Updating product visibility for vendor ID: " + vendorIDStr + ", merchant ID: " + merchantIDStr)
 
-	// Call service
 	updateResponse, errDetails := h.merchantService.UpdateProductVisibility(c.UserContext(), vendorID, merchantID, req)
 	if errDetails != nil {
 		log.Error(errDetails.Error, logPrefix+"Error updating product visibility: "+errDetails.Message)
@@ -272,7 +264,6 @@ func (h *VendorMerchantHandler) UpdateProductVisibility(c *fiber.Ctx) error {
 
 	log.Info(logPrefix + "Successfully updated product visibility for vendor ID: " + vendorIDStr + ", merchant ID: " + merchantIDStr)
 
-	// Return success response
 	body := &response.HTTPResponse{
 		Content: updateResponse,
 	}

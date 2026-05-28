@@ -174,36 +174,31 @@
         },
         {
           "name": "Register - Vendor",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
           "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [],
             "auth": {
               "type": "noauth"
             },
             "description": "",
             "url": {
-              "raw": "?Content-Type=application/json",
-              "protocol": "",
+              "raw": "http://localhost:8080/api/v0/vendor/register",
+              "protocol": "http",
               "host": [
-                "?Content-Type=application"
+                "localhost:8080"
               ],
               "path": [
-                "json"
+                "api",
+                "v0",
+                "vendor",
+                "register"
               ],
-              "query": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
+              "query": [],
               "variable": []
             },
             "body": {
               "mode": "raw",
-              "raw": "  {\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"phone\": \"9876543210\",\n    \"password\": \"password123\",\n    \"company_name\": \"Tech Solutions Ltd\",\n    \"gst_number\": \"22ABCDE1234F1Z5\",\n    \"address\": \"123 Business Street, Mumbai, Maharashtra\",\n    \"logo_url\": \"https://example.com/logo.png\"\n  }",
+              "raw": "  {\n    \"name\": \"1John Doe\",\n    \"email\": \"1john@example.com\",\n    \"phone\": \"9876543240\",\n    \"password\": \"password123\",\n    \"company_name\": \"Tech Solutions Ltd\",\n    \"gst_number\": \"22ABCDE1234F1Z5\",\n    \"address\": \"123 Business Street, Mumbai, Maharashtra\",\n    \"logo_url\": \"https://example.com/logo.png\"\n  }",
               "options": {
                 "raw": {
                   "language": "json"
@@ -424,7 +419,7 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzc5NzQwNzUzLCJuYmYiOjE3Nzk2NTQzNTMsImlhdCI6MTc3OTY1NDM1M30.RJOOVRvv1ABW-GZFlZw6KNdrKjfQyNy31mnEdZpZxLo",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzc5OTk2ODgxLCJuYmYiOjE3Nzk5MTA0ODEsImlhdCI6MTc3OTkxMDQ4MX0.j17Vmo2tuZQWT6NrPFeFx2lN8o71AOWseK5MwrcZhvE",
                 "disabled": false,
                 "type": "default"
               }
@@ -606,7 +601,7 @@
             },
             "description": "",
             "url": {
-              "raw": "http://localhost:8080/api/v0/vendor/2/products?limit=20&offset=0&name_or_description=rice&is_active=true",
+              "raw": "http://localhost:8080/api/v0/vendor/2/products?limit=20&offset=0&name_or_description=daal&is_active=true",
               "protocol": "http",
               "host": [
                 "localhost:8080"
@@ -629,7 +624,141 @@
                 },
                 {
                   "key": "name_or_description",
-                  "value": "rice"
+                  "value": "daal"
+                },
+                {
+                  "key": "is_active",
+                  "value": "true"
+                }
+              ],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Merchant-Flow (Public APIs)",
+      "item": [
+        {
+          "name": "Place Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/orders",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "orders"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_for\": \"business\",\n  \"customer_name\": \"John Doe\",\n  \"customer_mobile\": \"9876543210\",\n  \"shop_name\": \"John Stores\",\n  \"delivery_address\": \"123 Business Street, Mumbai\",\n  \"location\": {\n    \"latitude\": 19.076,\n    \"longitude\": 72.8777\n  },\n  \"notes\": \"Please deliver after 5 PM\",\n  \"items\": [\n    {\n      \"product_variant_id\": 1,\n      \"quantity\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Category List (For Dropdown)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/1/products/categories",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "1",
+                "products",
+                "categories"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "List Products Copy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InBhcnRoMkBleGFtcGxlLmNvbSIsInJvbGVfdHlwZSI6InZlbmRvciIsImlzcyI6InZtY29ubmVjdC1iYWNrZW5kIiwiZXhwIjoxNzgwMDA1MTAwLCJuYmYiOjE3Nzk5MTg3MDAsImlhdCI6MTc3OTkxODcwMH0.7vCD4rJ5QOG2wmXWK-_khvs5iqDCuqBaWjVvMym9lP4",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/products?limit=20&offset=0&name_or_description=daal&is_active=true",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "name_or_description",
+                  "value": "daal"
                 },
                 {
                   "key": "is_active",

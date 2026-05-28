@@ -16,7 +16,7 @@ import "time"
 // 4. Flexible Modes: Cash, UPI, Card, Cheque, Bank Transfer, COD - all supported
 type Payment struct {
 	ID      uint64 `gorm:"primaryKey" json:"id"`
-	OrderID uint   `gorm:"index;not null" json:"order_id"` // Foreign key to orders table
+	OrderID uint   `gorm:"index;not null;index:idx_payments_order_deleted_created,priority:1;index:idx_payments_order_deleted_status,priority:1" json:"order_id"` // Foreign key to orders table
 
 	// Actor Information: Who submitted the payment and when
 	SubmittedBy uint       `gorm:"not null;comment:'User ID who submitted payment'" json:"submitted_by"` // References users.id
@@ -33,20 +33,20 @@ type Payment struct {
 	TransactionID   string `gorm:"size:100" json:"transaction_id,omitempty"`   // Online payment gateway transaction ID
 
 	// Verification Status
-	Status     *PaymentStatus `gorm:"type:int;not null" json:"status"` // 10=Pending, 20=Processing, 30=Completed, 40=Failed, 50=Cancelled (see payment_status_enum.go)
-	Verified   bool           `gorm:"default:false" json:"verified"`   // Vendor confirmation flag: true = vendor confirmed receipt
-	VerifiedBy uint           `json:"verified_by,omitempty"`           // User ID of vendor who verified payment
-	VerifiedAt *time.Time     `json:"verified_at,omitempty"`           // Timestamp when vendor verified
+	Status     *PaymentStatus `gorm:"type:int;not null;index:idx_payments_order_deleted_status,priority:3" json:"status"` // 10=Pending, 20=Processing, 30=Completed, 40=Failed, 50=Cancelled (see payment_status_enum.go)
+	Verified   bool           `gorm:"default:false" json:"verified"`                                                      // Vendor confirmation flag: true = vendor confirmed receipt
+	VerifiedBy uint           `json:"verified_by,omitempty"`                                                              // User ID of vendor who verified payment
+	VerifiedAt *time.Time     `json:"verified_at,omitempty"`                                                              // Timestamp when vendor verified
 
 	// Additional Information
 	Notes    string  `gorm:"type:text" json:"notes,omitempty"`    // Free-text notes about payment (e.g., "Partial payment for goods received")
 	Metadata JSONMap `gorm:"type:json" json:"metadata,omitempty"` // Extra structured data for future extensibility
 
 	// Timestamps
-	PaidAt    time.Time `json:"paid_at"`                               // When payment was actually made (can be backdated)
-	CreatedAt time.Time `json:"created_at"`                            // When this record was created in system
-	UpdatedAt time.Time `json:"updated_at"`                            // Last modification timestamp
-	IsDeleted bool      `gorm:"default:false;index" json:"is_deleted"` // Soft delete flag
+	PaidAt    time.Time `json:"paid_at"`                                                                                                                                      // When payment was actually made (can be backdated)
+	CreatedAt time.Time `gorm:"index:idx_payments_order_deleted_created,priority:3" json:"created_at"`                                                                        // When this record was created in system
+	UpdatedAt time.Time `json:"updated_at"`                                                                                                                                   // Last modification timestamp
+	IsDeleted bool      `gorm:"default:false;index;index:idx_payments_order_deleted_created,priority:2;index:idx_payments_order_deleted_status,priority:2" json:"is_deleted"` // Soft delete flag
 
 	// Relationships: Preload these for complete payment context
 	Order           Order `gorm:"foreignKey:OrderID" json:"order,omitempty"`                 // The order this payment belongs to

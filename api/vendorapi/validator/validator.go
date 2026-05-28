@@ -12,6 +12,7 @@ import (
 // VendorValidator defines the interface for vendor validation
 type VendorValidator interface {
 	ValidateRegisterRequest(req *dto.VendorRegisterRequest) error
+	ValidateCreateOrderRequest(req *dto.CreateOrderRequest) error
 	ValidateAddProductRequest(req *dto.AddProductRequest) error
 	ValidateUpdateProductRequest(req *dto.UpdateProductRequest) error
 	ValidateProductQueryParam(queryParams *dto.ProductQueryParam) error
@@ -83,6 +84,64 @@ func (v *VendorValidatorImpl) ValidateRegisterRequest(req *dto.VendorRegisterReq
 
 	if req.Address == "" {
 		return errors.New("address is required")
+	}
+
+	return nil
+}
+
+func (v *VendorValidatorImpl) ValidateCreateOrderRequest(req *dto.CreateOrderRequest) error {
+	if req == nil {
+		return errors.New("request body is required")
+	}
+
+	req.OrderFor = strings.ToLower(strings.TrimSpace(req.OrderFor))
+	if req.OrderFor == "" {
+		return errors.New("order_for is required")
+	}
+	if req.OrderFor != "business" && req.OrderFor != "personal" {
+		return errors.New("order_for must be either business or personal")
+	}
+
+	req.CustomerName = strings.TrimSpace(req.CustomerName)
+	if req.CustomerName == "" {
+		return errors.New("customer_name is required")
+	}
+
+	req.CustomerMobile = strings.TrimSpace(req.CustomerMobile)
+	if req.CustomerMobile == "" {
+		return errors.New("customer_mobile is required")
+	}
+
+	mobileRegex := `^[6-9]\d{9}$`
+	if matched, _ := regexp.MatchString(mobileRegex, req.CustomerMobile); !matched {
+		return errors.New("customer_mobile must be a valid 10 digit Indian mobile number")
+	}
+
+	req.DeliveryAddress = strings.TrimSpace(req.DeliveryAddress)
+	if req.DeliveryAddress == "" && req.Location == nil {
+		return errors.New("delivery_address or location is required")
+	}
+
+	if req.Location != nil {
+		if req.Location.Latitude < -90 || req.Location.Latitude > 90 {
+			return errors.New("location.latitude must be between -90 and 90")
+		}
+		if req.Location.Longitude < -180 || req.Location.Longitude > 180 {
+			return errors.New("location.longitude must be between -180 and 180")
+		}
+	}
+
+	if len(req.Items) == 0 {
+		return errors.New("items are required")
+	}
+
+	for index, item := range req.Items {
+		if item.ProductVariantID == 0 {
+			return errors.New("product_variant_id is required for item " + strconv.Itoa(index+1))
+		}
+		if item.Quantity <= 0 {
+			return errors.New("quantity must be greater than 0 for all items")
+		}
 	}
 
 	return nil
@@ -195,8 +254,8 @@ func (v *VendorValidatorImpl) ValidateProductQueryParam(queryParams *dto.Product
 		return errors.New("offset must be non-negative")
 	}
 
-	if queryParams.ProductID > 0 && queryParams.CategoryName != "" {
-		return errors.New("product_id and category_name cannot be used together")
+	if queryParams.CategoryID > 0 && queryParams.CategoryName != "" {
+		return errors.New("category_id and category_name cannot be used together")
 	}
 
 	if queryParams.Ordering != "" {

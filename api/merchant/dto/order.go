@@ -67,7 +67,7 @@ type OrderItemInfo struct {
 	ID          uint    `json:"id"`
 	ProductID   uint    `json:"product_id"`
 	ProductName string  `json:"product_name"`
-	Quantity    int     `json:"quantity"`
+	Quantity    float64 `json:"quantity"`
 	Price       float64 `json:"price"`
 	SubTotal    float64 `json:"sub_total"`
 }

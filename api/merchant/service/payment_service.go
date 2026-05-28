@@ -46,7 +46,7 @@ func (s *PaymentServiceImpl) SubmitPayment(
 		return nil, errors.New("order not found")
 	}
 
-	if order.MerchantID != merchantID {
+	if !orderBelongsToMerchant(order, merchantID) {
 		return nil, errors.New("unauthorized: order does not belong to this merchant")
 	}
 
@@ -99,7 +99,7 @@ func (s *PaymentServiceImpl) SubmitPayment(
 	if *updatedOrder.Status == models.ORDER_PLACED {
 		paymentPending := models.ORDER_PAYMENT_PENDING
 		updatedOrder.Status = &paymentPending
-		updatedOrder.StatusUpdatedAt = now
+		updatedOrder.StatusUpdatedAt = &now
 		updatedOrder.StatusUpdatedBy = merchant.OwnerID
 		err = s.repo.UpdateOrderStatus(orderID, paymentPending)
 		if err != nil {
@@ -160,7 +160,7 @@ func (s *PaymentServiceImpl) GetOrderPayments(
 		return nil, errors.New("order not found")
 	}
 
-	if order.MerchantID != merchantID {
+	if !orderBelongsToMerchant(order, merchantID) {
 		return nil, errors.New("unauthorized: order does not belong to this merchant")
 	}
 

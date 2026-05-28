@@ -274,7 +274,7 @@ func (s *OrderServiceImpl) UpdateOrderStatus(ctx context.Context, merchantID, or
 	}
 
 	// Verify order belongs to merchant
-	if order.MerchantID != merchantID {
+	if !orderBelongsToMerchant(order, merchantID) {
 		return nil, &response.ErrorDetails{
 			Code:    http.StatusForbidden,
 			Message: "Order does not belong to this merchant",
@@ -348,7 +348,7 @@ func (s *OrderServiceImpl) GetOrderDetail(ctx context.Context, merchantID, order
 	}
 
 	// Verify order belongs to merchant
-	if order.MerchantID != merchantID {
+	if !orderBelongsToMerchant(order, merchantID) {
 		return nil, &response.ErrorDetails{
 			Code:    http.StatusForbidden,
 			Message: "Order does not belong to this merchant",
@@ -402,7 +402,7 @@ func (s *OrderServiceImpl) DeleteOrderItem(ctx context.Context, merchantID, orde
 	}
 
 	// Verify order belongs to merchant
-	if order.MerchantID != merchantID {
+	if !orderBelongsToMerchant(order, merchantID) {
 		return nil, &response.ErrorDetails{
 			Code:    http.StatusForbidden,
 			Message: "Order does not belong to this merchant",
@@ -489,7 +489,7 @@ func (s *OrderServiceImpl) PlaceOrder(ctx context.Context, merchantID, orderID u
 	}
 
 	// Verify order belongs to merchant
-	if order.MerchantID != merchantID {
+	if !orderBelongsToMerchant(order, merchantID) {
 		return nil, &response.ErrorDetails{
 			Code:    http.StatusForbidden,
 			Message: "Order does not belong to this merchant",
@@ -599,7 +599,7 @@ func (s *OrderServiceImpl) MarkReceived(ctx context.Context, merchantID, orderID
 	}
 
 	// Verify order belongs to merchant
-	if order.MerchantID != merchantID {
+	if !orderBelongsToMerchant(order, merchantID) {
 		return nil, &response.ErrorDetails{
 			Code:    http.StatusForbidden,
 			Message: "Order does not belong to this merchant",
@@ -716,7 +716,7 @@ func (s *OrderServiceImpl) CompleteOrder(ctx context.Context, merchantID, orderI
 	}
 
 	// Verify order belongs to merchant
-	if order.MerchantID != merchantID {
+	if !orderBelongsToMerchant(order, merchantID) {
 		return nil, &response.ErrorDetails{
 			Code:    http.StatusForbidden,
 			Message: "Order does not belong to this merchant",
@@ -823,7 +823,7 @@ func (s *OrderServiceImpl) CancelOrder(ctx context.Context, merchantID, orderID 
 	}
 
 	// Verify order belongs to merchant
-	if order.MerchantID != merchantID {
+	if !orderBelongsToMerchant(order, merchantID) {
 		return nil, &response.ErrorDetails{
 			Code:    http.StatusForbidden,
 			Message: "Order does not belong to this merchant",
@@ -907,4 +907,8 @@ func getProductPrice(product *models.Product) float64 {
 		return 0
 	}
 	return product.Variants[0].Price
+}
+
+func orderBelongsToMerchant(order *models.Order, merchantID uint) bool {
+	return order != nil && order.MerchantID != nil && *order.MerchantID == merchantID
 }

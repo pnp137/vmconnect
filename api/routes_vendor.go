@@ -10,6 +10,8 @@ import (
 	"linksupply.io/vmconnect/middleware"
 )
 
+const enableDeferredVendorOrderFlow = false
+
 func GetDefaultVendorHandler(server *APIServer) *vendorHandler.VendorHandler {
 	// Initialize vendor dependencies
 	repo := vendorRepository.NewVendorRepository(server.dataSource)
@@ -59,6 +61,16 @@ func SetupVendorRoutes(server *APIServer) {
 		return vh.Register(c)
 	})
 
+	vendorApi.Post("/:vid/orders", func(c *fiber.Ctx) error {
+		oh := GetDefaultVendorOrderHandler(server)
+		return oh.CreateOrder(c)
+	})
+
+	vendorApi.Get("/:vid/products/categories", func(c *fiber.Ctx) error {
+		ph := GetDefaultVendorProductHandler(server)
+		return ph.GetCategories(c)
+	})
+
 	authRepo := authRepository.NewAuthRepository(server.dataSource)
 	vendorProtected := vendorApi.Group("", middleware.VendorAPIProtected()...)
 	vendorScoped := vendorProtected.Group("/:vid", middleware.RequireVendorOwnership(authRepo))
@@ -95,11 +107,6 @@ func SetupVendorRoutes(server *APIServer) {
 		return ph.GetProducts(c)
 	})
 
-	vendorScoped.Get("/products/categories", func(c *fiber.Ctx) error {
-		ph := GetDefaultVendorProductHandler(server)
-		return ph.GetCategories(c)
-	})
-
 	// Merchant management routes
 	vendorScoped.Post("/merchants", func(c *fiber.Ctx) error {
 		mh := GetDefaultVendorMerchantHandler(server)
@@ -121,6 +128,13 @@ func SetupVendorRoutes(server *APIServer) {
 		return mh.DeleteMerchant(c)
 	})
 
+	// Deferred until product plan for vendor-managed order flow is finalized.
+	if enableDeferredVendorOrderFlow {
+		registerDeferredVendorOrderFlowRoutes(vendorScoped, server)
+	}
+}
+
+func registerDeferredVendorOrderFlowRoutes(vendorScoped fiber.Router, server *APIServer) {
 	vendorScoped.Get("/merchants/:mid/visibility", func(c *fiber.Ctx) error {
 		mh := GetDefaultVendorMerchantHandler(server)
 		return mh.GetProductVisibility(c)
@@ -131,7 +145,6 @@ func SetupVendorRoutes(server *APIServer) {
 		return mh.UpdateProductVisibility(c)
 	})
 
-	// Order state transition endpoints
 	vendorScoped.Post("/orders/:oid/confirm", func(c *fiber.Ctx) error {
 		oh := GetDefaultVendorOrderHandler(server)
 		return oh.ConfirmOrder(c)
@@ -147,7 +160,6 @@ func SetupVendorRoutes(server *APIServer) {
 		return oh.DispatchOrder(c)
 	})
 
-	// Payment endpoints (new flexible payment system)
 	vendorScoped.Post("/orders/:oid/mark-paid", func(c *fiber.Ctx) error {
 		ph := GetDefaultVendorPaymentHandler(server)
 		return ph.MarkOrderAsPaid(c)

@@ -84,7 +84,7 @@ func (s *PaymentServiceImpl) MarkOrderAsPaid(
 	if *order.Status == models.ORDER_PAYMENT_PENDING {
 		confirmedStatus := models.ORDER_CONFIRMED
 		order.Status = &confirmedStatus
-		order.StatusUpdatedAt = now
+		order.StatusUpdatedAt = &now
 		order.StatusUpdatedBy = vendor.UserID
 	}
 

@@ -2,18 +2,21 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
 	"linksupply.io/vmconnect/api/response"
 	"linksupply.io/vmconnect/api/vendorapi/dto"
 	"linksupply.io/vmconnect/api/vendorapi/repository"
+	validator "linksupply.io/vmconnect/api/vendorapi/validator"
 	"linksupply.io/vmconnect/database/models"
 	"linksupply.io/vmconnect/utils"
 )
 
 // OrderService defines the interface for vendor order operations
 type OrderService interface {
+	CreateOrder(ctx context.Context, vendorID uint, req *dto.CreateOrderRequest) (*dto.CreateOrderResponse, *response.ErrorDetails)
 	ConfirmOrder(ctx context.Context, vendorID, orderID uint, req *dto.ConfirmOrderRequest) (*dto.ConfirmOrderResponse, *response.ErrorDetails)
 	GenerateInvoice(ctx context.Context, vendorID, orderID uint, req *dto.GenerateInvoiceRequest) (*dto.GenerateInvoiceResponse, *response.ErrorDetails)
 	DispatchOrder(ctx context.Context, vendorID, orderID uint, req *dto.DispatchOrderRequest) (*dto.DispatchOrderResponse, *response.ErrorDetails)
@@ -23,6 +26,7 @@ type OrderService interface {
 type OrderServiceImpl struct {
 	repository     repository.VendorRepository
 	stateValidator *utils.OrderStateValidator
+	validator      validator.VendorValidator
 }
 
 // NewOrderService creates a new instance of vendor order service
@@ -30,7 +34,222 @@ func NewOrderService(repo repository.VendorRepository) OrderService {
 	return &OrderServiceImpl{
 		repository:     repo,
 		stateValidator: utils.NewOrderStateValidator(),
+		validator:      validator.NewVendorValidator(),
 	}
+}
+
+func (s *OrderServiceImpl) CreateOrder(ctx context.Context, vendorID uint, req *dto.CreateOrderRequest) (*dto.CreateOrderResponse, *response.ErrorDetails) {
+	if err := s.validator.ValidateCreateOrderRequest(req); err != nil {
+		return nil, &response.ErrorDetails{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Error:   err,
+		}
+	}
+
+	if _, err := s.repository.GetVendorByID(vendorID); err != nil {
+		return nil, &response.ErrorDetails{
+			Code:    http.StatusBadRequest,
+			Message: "vendor not found",
+			Error:   err,
+		}
+	}
+
+	variantIDs := uniqueVariantIDs(req.Items)
+	variants, err := s.repository.GetProductVariantsByIDs(variantIDs)
+	if err != nil {
+		return nil, &response.ErrorDetails{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to fetch product variants",
+			Error:   err,
+		}
+	}
+
+	variantMap := make(map[uint]models.ProductVariant, len(variants))
+	for _, variant := range variants {
+		variantMap[variant.ID] = variant
+	}
+
+	orderItems := make([]models.OrderItem, 0, len(req.Items))
+	responseItems := make([]dto.OrderItemResponse, 0, len(req.Items))
+	orderTotal := 0.0
+
+	for _, item := range req.Items {
+		variant, found := variantMap[item.ProductVariantID]
+		if !found {
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusBadRequest,
+				Message: fmt.Sprintf("product variant %d not found", item.ProductVariantID),
+				Error:   fmt.Errorf("variant %d not found", item.ProductVariantID),
+			}
+		}
+
+		if !variant.IsActive {
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusBadRequest,
+				Message: fmt.Sprintf("product variant %s is not available", variant.Name),
+				Error:   fmt.Errorf("variant inactive"),
+			}
+		}
+
+		if variant.Product.VendorID != vendorID {
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusBadRequest,
+				Message: fmt.Sprintf("variant %s does not belong to vendor %d", variant.Name, vendorID),
+				Error:   fmt.Errorf("variant vendor mismatch"),
+			}
+		}
+
+		if item.Quantity < variant.MOQ {
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusBadRequest,
+				Message: fmt.Sprintf("minimum order quantity for %s is %.0f", variant.Name, variant.MOQ),
+				Error:   fmt.Errorf("quantity below moq"),
+			}
+		}
+
+		if item.Quantity > float64(variant.Stock) {
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusBadRequest,
+				Message: fmt.Sprintf("insufficient stock for variant %s", variant.Name),
+				Error:   fmt.Errorf("insufficient stock"),
+			}
+		}
+
+		quantityInt := int(item.Quantity)
+		if float64(quantityInt) != item.Quantity {
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusBadRequest,
+				Message: fmt.Sprintf("quantity for variant %s must be a whole number", variant.Name),
+				Error:   fmt.Errorf("quantity must be whole number"),
+			}
+		}
+
+		itemTotal := item.Quantity * variant.Price
+		orderTotal += itemTotal
+
+		orderItems = append(orderItems, models.OrderItem{
+			ProductID:        variant.ProductID,
+			ProductVariantID: variant.ID,
+			ProductName:      variant.Product.Name,
+			VariantName:      variant.Name,
+			Quantity:         item.Quantity,
+			UnitPrice:        variant.Price,
+			TotalPrice:       itemTotal,
+			Price:            variant.Price,
+			SubTotal:         itemTotal,
+		})
+
+		responseItems = append(responseItems, dto.OrderItemResponse{
+			ProductName: variant.Product.Name,
+			VariantName: variant.Name,
+			Quantity:    item.Quantity,
+			UnitPrice:   variant.Price,
+			TotalPrice:  itemTotal,
+		})
+	}
+
+	orderStatus := models.ORDER_PLACED
+	var latitude *float64
+	var longitude *float64
+	googleMapsURL := ""
+	if req.Location != nil {
+		latitude = &req.Location.Latitude
+		longitude = &req.Location.Longitude
+		googleMapsURL = buildGoogleMapsURL(req.Location.Latitude, req.Location.Longitude)
+	}
+
+	order := &models.Order{
+		OrderNo:         fmt.Sprintf("ORDER-%d", time.Now().UnixNano()),
+		VendorID:        vendorID,
+		OrderFor:        req.OrderFor,
+		CustomerName:    req.CustomerName,
+		CustomerMobile:  req.CustomerMobile,
+		Latitude:        latitude,
+		Longitude:       longitude,
+		GoogleMapsURL:   googleMapsURL,
+		ShopName:        req.ShopName,
+		DeliveryAddress: req.DeliveryAddress,
+		Notes:           req.Notes,
+		Status:          &orderStatus,
+		TotalAmount:     orderTotal,
+		ItemCount:       len(orderItems),
+	}
+
+	tx := s.repository.GetDB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if tx.Error != nil {
+		return nil, &response.ErrorDetails{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to start database transaction",
+			Error:   tx.Error,
+		}
+	}
+
+	if err := s.repository.CreateOrder(tx, order); err != nil {
+		tx.Rollback()
+		return nil, &response.ErrorDetails{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to create order",
+			Error:   err,
+		}
+	}
+
+	for index := range orderItems {
+		orderItems[index].OrderID = order.ID
+		if err := s.repository.CreateOrderItem(tx, &orderItems[index]); err != nil {
+			tx.Rollback()
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusInternalServerError,
+				Message: "failed to create order item",
+				Error:   err,
+			}
+		}
+	}
+
+	for _, item := range orderItems {
+		quantityInt := int(item.Quantity)
+		if err := s.repository.ReduceProductVariantStock(tx, item.ProductVariantID, quantityInt); err != nil {
+			tx.Rollback()
+			return nil, &response.ErrorDetails{
+				Code:    http.StatusBadRequest,
+				Message: err.Error(),
+				Error:   err,
+			}
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return nil, &response.ErrorDetails{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to commit order transaction",
+			Error:   err,
+		}
+	}
+
+	var locationResponse *dto.OrderLocationResponse
+	if order.Latitude != nil && order.Longitude != nil {
+		locationResponse = &dto.OrderLocationResponse{
+			Latitude:      order.Latitude,
+			Longitude:     order.Longitude,
+			GoogleMapsURL: order.GoogleMapsURL,
+		}
+	}
+
+	return &dto.CreateOrderResponse{
+		OrderID:     order.ID,
+		Status:      order.Status.String(),
+		TotalAmount: orderTotal,
+		Location:    locationResponse,
+		Items:       responseItems,
+		CreatedAt:   order.CreatedAt,
+	}, nil
 }
 
 // ConfirmOrder transitions order from PLACED to CONFIRMED
@@ -471,4 +690,20 @@ func (s *OrderServiceImpl) CancelOrder(ctx context.Context, vendorID, orderID ui
 		Message:   "Order cancelled successfully",
 		Timestamp: time.Now().Format(time.RFC3339),
 	}, nil
+}
+
+func uniqueVariantIDs(items []dto.OrderItemRequest) []uint {
+	ids := make([]uint, 0, len(items))
+	seen := make(map[uint]struct{})
+	for _, item := range items {
+		if _, ok := seen[item.ProductVariantID]; !ok {
+			ids = append(ids, item.ProductVariantID)
+			seen[item.ProductVariantID] = struct{}{}
+		}
+	}
+	return ids
+}
+
+func buildGoogleMapsURL(latitude, longitude float64) string {
+	return fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%f,%f", latitude, longitude)
 }

@@ -1,5 +1,51 @@
 package dto
 
+import "time"
+
+type OrderItemRequest struct {
+	ProductVariantID uint    `json:"product_variant_id"`
+	Quantity         float64 `json:"quantity"`
+}
+
+type OrderLocationRequest struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+}
+
+type OrderLocationResponse struct {
+	Latitude      *float64 `json:"latitude,omitempty"`
+	Longitude     *float64 `json:"longitude,omitempty"`
+	GoogleMapsURL string   `json:"google_maps_url,omitempty"`
+}
+
+type CreateOrderRequest struct {
+	OrderFor        string                `json:"order_for"`
+	CustomerName    string                `json:"customer_name"`
+	CustomerMobile  string                `json:"customer_mobile"`
+	ShopName        string                `json:"shop_name,omitempty"`
+	DeliveryAddress string                `json:"delivery_address,omitempty"`
+	Location        *OrderLocationRequest `json:"location,omitempty"`
+	Notes           string                `json:"notes,omitempty"`
+	Items           []OrderItemRequest    `json:"items"`
+}
+
+type OrderItemResponse struct {
+	ProductName string  `json:"product_name"`
+	VariantName string  `json:"variant_name"`
+	Quantity    float64 `json:"quantity"`
+	UnitPrice   float64 `json:"unit_price"`
+	TotalPrice  float64 `json:"total_price"`
+}
+
+type CreateOrderResponse struct {
+	OrderID     uint                   `json:"order_id"`
+	Status      string                 `json:"status"`
+	TotalAmount float64                `json:"total_amount"`
+	Location    *OrderLocationResponse `json:"location,omitempty"`
+	Items       []OrderItemResponse    `json:"items"`
+	CreatedAt   time.Time              `json:"created_at"`
+}
+
 // ===== Vendor Order State Transition DTOs =====
 
 // ConfirmOrderRequest represents the request to confirm an order

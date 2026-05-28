@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 	"linksupply.io/vmconnect/database/models"
 	"linksupply.io/vmconnect/system"
@@ -9,6 +11,8 @@ import (
 // VendorRepository defines the interface for vendor repository
 // VendorRepository defines the interface for vendor repository operations
 type VendorRepository interface {
+	GetDB() *gorm.DB
+
 	// User operations
 	CreateUser(user *models.User) (*models.User, error)
 	GetUserByEmailOrPhone(email, phone string) (*models.User, error)
@@ -17,6 +21,10 @@ type VendorRepository interface {
 	GetVendorByID(vendorID uint) (*models.Vendor, error)
 
 	// Order operations
+	GetProductVariantsByIDs(variantIDs []uint) ([]models.ProductVariant, error)
+	CreateOrder(tx *gorm.DB, order *models.Order) error
+	CreateOrderItem(tx *gorm.DB, item *models.OrderItem) error
+	ReduceProductVariantStock(tx *gorm.DB, variantID uint, quantity int) error
 	GetOrderByID(orderID uint) (*models.Order, error)
 	UpdateOrderStatus(orderID uint, status models.OrderStatus) error
 	CreateOrderActivity(activity *models.OrderActivity) (*models.OrderActivity, error)
@@ -38,6 +46,10 @@ type VendorRepositoryImpl struct {
 // NewVendorRepository creates a new instance of vendor repository
 func NewVendorRepository(db *system.DataSource) VendorRepository {
 	return &VendorRepositoryImpl{db: db.Db}
+}
+
+func (r *VendorRepositoryImpl) GetDB() *gorm.DB {
+	return r.db
 }
 
 // CreateUser creates a new user
@@ -71,6 +83,37 @@ func (r *VendorRepositoryImpl) GetVendorByID(vendorID uint) (*models.Vendor, err
 		return nil, err
 	}
 	return &vendor, nil
+}
+
+func (r *VendorRepositoryImpl) GetProductVariantsByIDs(variantIDs []uint) ([]models.ProductVariant, error) {
+	var variants []models.ProductVariant
+	err := r.db.Preload("Product").Where("id IN ? AND is_active = ?", variantIDs, true).Find(&variants).Error
+	return variants, err
+}
+
+func (r *VendorRepositoryImpl) CreateOrder(tx *gorm.DB, order *models.Order) error {
+	return tx.Create(order).Error
+}
+
+func (r *VendorRepositoryImpl) CreateOrderItem(tx *gorm.DB, item *models.OrderItem) error {
+	return tx.Create(item).Error
+}
+
+func (r *VendorRepositoryImpl) ReduceProductVariantStock(tx *gorm.DB, variantID uint, quantity int) error {
+	if quantity <= 0 {
+		return errors.New("invalid quantity")
+	}
+
+	result := tx.Model(&models.ProductVariant{}).
+		Where("id = ? AND stock >= ?", variantID, quantity).
+		UpdateColumn("stock", gorm.Expr("stock - ?", quantity))
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return errors.New("insufficient stock")
+	}
+	return nil
 }
 
 // GetOrderByID gets order by ID with related data

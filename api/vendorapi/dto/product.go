@@ -111,6 +111,7 @@ type GetCategoriesResponse struct {
 
 // ProductQueryParam represents query parameters for product listing
 type ProductQueryParam struct {
+	CategoryID        uint   `query:"category_id" validate:"omitempty"`
 	CategoryName      string `query:"category_name" validate:"omitempty,max=100"`
 	ProductID         uint   `query:"product_id" validate:"omitempty"`
 	IsActive          *bool  `query:"is_active" validate:"omitempty"`
