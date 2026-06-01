@@ -22,11 +22,45 @@ type CreateOrderRequest struct {
 	OrderFor        string                `json:"order_for"`
 	CustomerName    string                `json:"customer_name"`
 	CustomerMobile  string                `json:"customer_mobile"`
-	ShopName        string                `json:"shop_name,omitempty"`
+	BusinessName    string                `json:"business_name,omitempty"`
 	DeliveryAddress string                `json:"delivery_address,omitempty"`
 	Location        *OrderLocationRequest `json:"location,omitempty"`
 	Notes           string                `json:"notes,omitempty"`
 	Items           []OrderItemRequest    `json:"items"`
+}
+
+// Query and response DTOs for listing orders
+type OrderQueryParam struct {
+	Status         string `query:"status" validate:"omitempty,oneof=PLACED CONFIRMED INVOICED SHIPPED DELIVERED CANCELLED"`
+	OrderNo        string `query:"order_no" validate:"omitempty,max=100"`
+	CustomerName   string `query:"customer_name" validate:"omitempty,max=255"`
+	CustomerMobile string `query:"customer_mobile" validate:"omitempty,max=20"`
+	Limit          int    `query:"limit" validate:"min=1,max=100"`
+	Offset         int    `query:"offset" validate:"min=0"`
+	Ordering       string `query:"ordering" validate:"omitempty,oneof=created_at total_amount"`
+}
+
+type OrderInfo struct {
+	ID             uint      `json:"id"`
+	OrderNo        string    `json:"order_no"`
+	CustomerName   string    `json:"customer_name,omitempty"`
+	CustomerMobile string    `json:"customer_mobile,omitempty"`
+	BusinessName   string    `json:"business_name,omitempty"`
+	Status         string    `json:"status"`
+	TotalAmount    float64   `json:"total_amount"`
+	CreatedAt      time.Time `json:"created_at"`
+}
+
+type GetOrdersResponse struct {
+	Orders []OrderInfo `json:"orders"`
+	Count  int         `json:"count"`
+	Limit  int         `json:"limit"`
+	Offset int         `json:"offset"`
+	Total  int         `json:"total"`
+}
+
+type GetOrderResponse struct {
+	Order interface{} `json:"order"`
 }
 
 type OrderItemResponse struct {

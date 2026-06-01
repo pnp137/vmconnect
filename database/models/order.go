@@ -16,9 +16,7 @@ type Order struct {
 	Longitude      *float64 `json:"longitude,omitempty"`
 	GoogleMapsURL  string   `gorm:"size:500" json:"google_maps_url,omitempty"`
 
-	MerchantName    string `gorm:"size:255" json:"merchant_name,omitempty"`
-	MerchantMobile  string `gorm:"size:20" json:"merchant_mobile,omitempty"`
-	ShopName        string `gorm:"size:255" json:"shop_name,omitempty"`
+	BusinessName    string `gorm:"size:255" json:"business_name,omitempty"`
 	DeliveryAddress string `gorm:"type:text" json:"delivery_address,omitempty"`
 
 	// Order State

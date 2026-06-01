@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"gorm.io/gorm"
+	"linksupply.io/vmconnect/api/vendorapi/dto"
 	"linksupply.io/vmconnect/database/models"
 	"linksupply.io/vmconnect/system"
 )
@@ -26,6 +27,7 @@ type VendorRepository interface {
 	CreateOrderItem(tx *gorm.DB, item *models.OrderItem) error
 	ReduceProductVariantStock(tx *gorm.DB, variantID uint, quantity int) error
 	GetOrderByID(orderID uint) (*models.Order, error)
+	GetOrders(vendorID uint, params *dto.OrderQueryParam) ([]models.Order, int64, error)
 	UpdateOrderStatus(orderID uint, status models.OrderStatus) error
 	CreateOrderActivity(activity *models.OrderActivity) (*models.OrderActivity, error)
 	CheckStatusInHistory(orderID uint, status models.OrderStatus) (bool, *models.OrderActivity, error)
@@ -125,6 +127,63 @@ func (r *VendorRepositoryImpl) GetOrderByID(orderID uint) (*models.Order, error)
 		return nil, err
 	}
 	return &order, nil
+}
+
+// GetOrders returns orders for a vendor with filters and pagination
+func (r *VendorRepositoryImpl) GetOrders(vendorID uint, params *dto.OrderQueryParam) ([]models.Order, int64, error) {
+	var orders []models.Order
+	var total int64
+
+	q := r.db.Model(&models.Order{}).
+		Preload("Vendor").
+		Preload("Merchant").
+		Preload("OrderItems.Product").
+		Where("vendor_id = ? AND is_deleted = ?", vendorID, false)
+
+	if params != nil {
+		if params.OrderNo != "" {
+			q = q.Where("order_no LIKE ?", "%"+params.OrderNo+"%")
+		}
+		if params.CustomerName != "" {
+			q = q.Where("customer_name LIKE ?", "%"+params.CustomerName+"%")
+		}
+		if params.CustomerMobile != "" {
+			q = q.Where("customer_mobile LIKE ?", "%"+params.CustomerMobile+"%")
+		}
+		if params.Status != "" {
+			if status, ok := models.ParseOrderStatusString(params.Status); ok {
+				q = q.Where("status = ?", int(status))
+			} else if models.CheckIfOrderStatusStringIsValid(params.Status) {
+				q = q.Where("status = ?", params.Status)
+			}
+		}
+	}
+
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	orderBy := "created_at"
+	if params != nil && params.Ordering != "" {
+		orderBy = params.Ordering
+	}
+	q = q.Order(orderBy + " DESC")
+
+	limit := 20
+	if params != nil && params.Limit > 0 {
+		limit = params.Limit
+	}
+	q = q.Limit(limit)
+
+	if params != nil && params.Offset >= 0 {
+		q = q.Offset(params.Offset)
+	}
+
+	if err := q.Find(&orders).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return orders, total, nil
 }
 
 // UpdateOrderStatus updates order status

@@ -21,6 +21,8 @@ type OrderService interface {
 	GenerateInvoice(ctx context.Context, vendorID, orderID uint, req *dto.GenerateInvoiceRequest) (*dto.GenerateInvoiceResponse, *response.ErrorDetails)
 	DispatchOrder(ctx context.Context, vendorID, orderID uint, req *dto.DispatchOrderRequest) (*dto.DispatchOrderResponse, *response.ErrorDetails)
 	CancelOrder(ctx context.Context, vendorID, orderID uint, req *dto.CancelOrderRequest) (*dto.CancelOrderResponse, *response.ErrorDetails)
+	GetOrders(ctx context.Context, vendorID uint, params *dto.OrderQueryParam) (*dto.GetOrdersResponse, *response.ErrorDetails)
+	GetOrder(ctx context.Context, vendorID, orderID uint) (*dto.GetOrderResponse, *response.ErrorDetails)
 }
 
 type OrderServiceImpl struct {
@@ -168,7 +170,7 @@ func (s *OrderServiceImpl) CreateOrder(ctx context.Context, vendorID uint, req *
 		Latitude:        latitude,
 		Longitude:       longitude,
 		GoogleMapsURL:   googleMapsURL,
-		ShopName:        req.ShopName,
+		BusinessName:    req.BusinessName,
 		DeliveryAddress: req.DeliveryAddress,
 		Notes:           req.Notes,
 		Status:          &orderStatus,
@@ -690,6 +692,63 @@ func (s *OrderServiceImpl) CancelOrder(ctx context.Context, vendorID, orderID ui
 		Message:   "Order cancelled successfully",
 		Timestamp: time.Now().Format(time.RFC3339),
 	}, nil
+}
+
+// GetOrders returns paginated list of orders for a vendor with optional filters
+func (s *OrderServiceImpl) GetOrders(ctx context.Context, vendorID uint, params *dto.OrderQueryParam) (*dto.GetOrdersResponse, *response.ErrorDetails) {
+	// set defaults
+	if params == nil {
+		params = &dto.OrderQueryParam{Limit: 20}
+	}
+	if params.Limit == 0 {
+		params.Limit = 20
+	}
+	if params.Ordering == "" {
+		params.Ordering = "created_at"
+	}
+
+	orders, total, err := s.repository.GetOrders(vendorID, params)
+	if err != nil {
+		return nil, &response.ErrorDetails{Code: http.StatusInternalServerError, Message: "Failed to get orders", Error: err}
+	}
+
+	infos := make([]dto.OrderInfo, 0, len(orders))
+	for _, o := range orders {
+		status := ""
+		if o.Status != nil {
+			status = o.Status.String()
+		}
+		infos = append(infos, dto.OrderInfo{
+			ID:             o.ID,
+			OrderNo:        o.OrderNo,
+			CustomerName:   o.CustomerName,
+			CustomerMobile: o.CustomerMobile,
+			BusinessName:   o.BusinessName,
+			Status:         status,
+			TotalAmount:    o.TotalAmount,
+			CreatedAt:      o.CreatedAt,
+		})
+	}
+
+	return &dto.GetOrdersResponse{
+		Orders: infos,
+		Count:  len(infos),
+		Limit:  params.Limit,
+		Offset: params.Offset,
+		Total:  int(total),
+	}, nil
+}
+
+// GetOrder returns a single order if it belongs to vendor
+func (s *OrderServiceImpl) GetOrder(ctx context.Context, vendorID, orderID uint) (*dto.GetOrderResponse, *response.ErrorDetails) {
+	order, err := s.repository.GetOrderByID(orderID)
+	if err != nil {
+		return nil, &response.ErrorDetails{Code: http.StatusNotFound, Message: "Order not found", Error: err}
+	}
+	if order.VendorID != vendorID {
+		return nil, &response.ErrorDetails{Code: http.StatusForbidden, Message: "Order does not belong to this vendor", Error: nil}
+	}
+	return &dto.GetOrderResponse{Order: order}, nil
 }
 
 func uniqueVariantIDs(items []dto.OrderItemRequest) []uint {

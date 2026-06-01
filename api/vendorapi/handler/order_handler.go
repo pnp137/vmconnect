@@ -134,3 +134,57 @@ func (h *OrderHandler) CancelOrder(c *fiber.Ctx) error {
 	body := &response.HTTPResponse{Content: result}
 	return response.WriteHTTPResponse(c, http.StatusOK, body)
 }
+
+// GetOrders handles GET /vendors/{vid}/orders
+func (h *OrderHandler) GetOrders(c *fiber.Ctx) error {
+	vendorIDStr := c.Params("vid")
+	vendorID, err := h.validator.ValidateIDParameter(vendorIDStr, "vendor ID")
+	if err != nil {
+		body := response.GetErrorHTTPResponseBody(400, err.Error(), nil)
+		return response.WriteHTTPResponse(c, 400, body)
+	}
+
+	var params dto.OrderQueryParam
+	if err := c.QueryParser(&params); err != nil {
+		body := response.GetErrorHTTPResponseBody(400, "Invalid query parameters", nil)
+		return response.WriteHTTPResponse(c, 400, body)
+	}
+	if params.Limit == 0 {
+		params.Limit = 20
+	}
+	if params.Ordering == "" {
+		params.Ordering = "created_at"
+	}
+
+	result, errDetails := h.orderService.GetOrders(c.UserContext(), vendorID, &params)
+	if errDetails != nil {
+		body := response.GetErrorHTTPResponseBody(errDetails.Code, errDetails.Message, nil)
+		return response.WriteHTTPResponse(c, errDetails.Code, body)
+	}
+
+	body := &response.HTTPResponse{Content: result}
+	return response.WriteHTTPResponse(c, http.StatusOK, body)
+}
+
+// GetOrder handles GET /vendors/{vid}/orders/{oid}
+func (h *OrderHandler) GetOrder(c *fiber.Ctx) error {
+	vendorID, err := h.validator.ValidateIDParameter(c.Params("vid"), "vendor ID")
+	if err != nil {
+		body := response.GetErrorHTTPResponseBody(400, err.Error(), nil)
+		return response.WriteHTTPResponse(c, 400, body)
+	}
+	orderID, err := h.validator.ValidateIDParameter(c.Params("oid"), "order ID")
+	if err != nil {
+		body := response.GetErrorHTTPResponseBody(400, err.Error(), nil)
+		return response.WriteHTTPResponse(c, 400, body)
+	}
+
+	result, errDetails := h.orderService.GetOrder(c.UserContext(), vendorID, orderID)
+	if errDetails != nil {
+		body := response.GetErrorHTTPResponseBody(errDetails.Code, errDetails.Message, nil)
+		return response.WriteHTTPResponse(c, errDetails.Code, body)
+	}
+
+	body := &response.HTTPResponse{Content: result}
+	return response.WriteHTTPResponse(c, http.StatusOK, body)
+}

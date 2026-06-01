@@ -770,6 +770,170 @@
           }
         }
       ]
+    },
+    {
+      "name": "Order",
+      "item": [
+        {
+          "name": "Create Order -Public API",
+          "request": {
+            "method": "post",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer <TOKEN>",
+                "disabled": false,
+                "type": "default"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/orders",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "orders"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_for\": \"business\",\n  \"customer_name\": \"John Doe\",\n  \"customer_mobile\": \"9876543210\",\n  \"business_name\": \"John Stores\",\n  \"delivery_address\": \"123 Business Street, Mumbai\",\n  \"location\": {\n    \"latitude\": 19.076,\n    \"longitude\": 72.8777\n  },\n  \"notes\": \"Please deliver after 5 PM\",\n  \"items\": [\n    {\n      \"product_variant_id\": 1,\n      \"quantity\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Order - Auth Require",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer <TOKEN>",
+                "disabled": true,
+                "type": "default"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/2/orders/1",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "2",
+                "orders",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Get Order With FIlters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer <TOKEN>",
+                "disabled": false,
+                "type": "default"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:8080/api/v0/vendor/123/orders?status=CONFIRMED&order_no=ORDER-123&customer_name=John&customer_mobile=9876543210&limit=20&offset=0&ordering=created_at",
+              "protocol": "http",
+              "host": [
+                "localhost:8080"
+              ],
+              "path": [
+                "api",
+                "v0",
+                "vendor",
+                "123",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "CONFIRMED"
+                },
+                {
+                  "key": "order_no",
+                  "value": "ORDER-123"
+                },
+                {
+                  "key": "customer_name",
+                  "value": "John"
+                },
+                {
+                  "key": "customer_mobile",
+                  "value": "9876543210"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "ordering",
+                  "value": "created_at"
+                }
+              ],
+              "variable": []
+            }
+          }
+        }
+      ]
     }
   ],
   "variable": []

@@ -118,6 +118,17 @@ func SetupVendorRoutes(server *APIServer) {
 		return mh.GetMerchants(c)
 	})
 
+	// Orders listing and retrieval
+	vendorScoped.Get("/orders", func(c *fiber.Ctx) error {
+		oh := GetDefaultVendorOrderHandler(server)
+		return oh.GetOrders(c)
+	})
+
+	vendorScoped.Get("/orders/:oid", func(c *fiber.Ctx) error {
+		oh := GetDefaultVendorOrderHandler(server)
+		return oh.GetOrder(c)
+	})
+
 	vendorScoped.Put("/merchants/:mid", func(c *fiber.Ctx) error {
 		mh := GetDefaultVendorMerchantHandler(server)
 		return mh.UpdateMerchant(c)
